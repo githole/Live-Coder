@@ -8,3 +8,12 @@ GLEW 1.7.0 (http://sourceforge.net/projects/glew/files/glew/1.7.0/)
 
 - Max OS X
 Requirement: SDL 1.2
+
+* Key bindings have a little problem
+F1 - F10: Change Editing File
+F11: Toggle Edit Mode
+F12: Edit Post FX File
+Ctrl+S: Save
+Ctrl+O: Load
+Ctrl+/: Undo
+Ctrl+.: Redo
