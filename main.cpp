@@ -17,6 +17,7 @@ int main(int argc, char** argv) {
 	  width = atoi(argv[2]);
 	  height = atoi(argv[3]);
 	}
+
 	if (core.Initialize("Live Coder", width, height, flags) < 0) {
 		return -1;
 	}
