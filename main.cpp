@@ -1,17 +1,25 @@
 #include "Core.h"
 #include "TextEditor.h"
+#include "Logger.h"
 
 int main(int argc, char** argv) {
 	LiveCoder::Core core;
+	int flags = SDL_OPENGL;
+	int width = 1920 / 2;
+	int height = 1080 / 2;
 
-	
-	if (core.Initialize("Live Coder", 1920/2, 1080/2, SDL_OPENGL) < 0) {
+	if (argc >= 2) {
+	  if (strcmp(argv[1], "-f") == 0) {
+	    flags = SDL_OPENGL | SDL_FULLSCREEN;
+	  }
+	}
+	if (argc >= 4) {
+	  width = atoi(argv[2]);
+	  height = atoi(argv[3]);
+	}
+	if (core.Initialize("Live Coder", width, height, flags) < 0) {
 		return -1;
 	}
-	/*
-	if (core.Initialize("Live Coder", 1920, 1200, SDL_OPENGL | SDL_FULLSCREEN) < 0) {
-		return -1;
-	}*/
 	core.MainLoop();
 
 	return 0;

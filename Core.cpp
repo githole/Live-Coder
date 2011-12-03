@@ -21,7 +21,6 @@ const char* EffectFileTable[] = {
 int Core::Initialize(std::string title_ = "Title" , int width_ = DefaultWidth, int height_ = DefaultHeight, int SDLflags = SDL_OPENGL) {
     const SDL_VideoInfo* info = NULL;
 
-
     if (SDL_Init(SDL_INIT_VIDEO) < 0) {
 		Logger::Instance()->OutputString("Error: " + std::string(SDL_GetError()));
 		return -1;

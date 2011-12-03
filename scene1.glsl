@@ -17,7 +17,7 @@ float makePoint(float x,float y,float fx,float fy,float sx,float sy,float t){
 }
 
 void main( void ) {
-   lowFreq = 100.0 * lowFreq * lowFreq;
+   float weight = 100.0 * lowFreq * lowFreq;
    vec2 p=(gl_FragCoord.xy/resolution.x)*2.0-vec2(1.0,resolution.y/resolution.x);
 
    p=p*1.5;
@@ -51,5 +51,5 @@ void main( void ) {
    
    vec3 d=vec3(a,b,c)/32.0;
    
-   gl_FragColor = lowFreq * vec4(d.x,d.y,d.z,1.0);
+   gl_FragColor = weight * vec4(d.x,d.y,d.z,1.0);
 }

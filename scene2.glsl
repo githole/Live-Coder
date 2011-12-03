@@ -1,10 +1,13 @@
+//
+// Mandelbrot
+
 uniform float lowFreq;
 uniform vec2 resolution;
 uniform float time;
 
 float mandel(vec2 pos) {
   vec2 z = vec2(0.0, 0.0);
-  const int limit = 32;
+  const int limit = 16;
   int count;
   for (count = 0; count < limit; count ++) {
     if (length(z) > 2.0 * lowFreq * 10.0)
@@ -23,7 +26,7 @@ void main() {
   
   for (int i = 0; i < 8; i ++) {
     float a = sin(time / 0.1) * lowFreq * lowFreq;
-    vec2 p = pos + a * vec2(sin(i / 8.0 * 6.29), cos(i / 8.0 * 6.28));
+    vec2 p = pos + a * vec2(sin(float(i) / 8.0 * 6.29), cos(float(i) / 8.0 * 6.28));
     
     r += mandel(p);
   }
