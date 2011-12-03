@@ -1,0 +1,10 @@
+For compilation
+
+- Windows(Microsoft Visual Stdio)
+Require: OpenAL 1.1 SDK, SDL 1.2, GLEW 1.7.0
+OepnAL (http://connect.creativelabs.com/openal/Downloads/Forms/AllItems.aspx -> OpenAL11CoreSDK)
+SDL (http://www.libsdl.org/download-1.2.php -> SDL-devel-1.2.14-VC8.zip)
+GLEW 1.7.0 (http://sourceforge.net/projects/glew/files/glew/1.7.0/)
+
+- Max OS X
+Require: SDL 1.2
