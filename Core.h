@@ -43,6 +43,8 @@ private:
 	int bpp;
 	bool end;
 
+	bool editMode;
+
 	int nowEffect;
 
 	std::string title;

@@ -42,7 +42,7 @@ void fft(int n, float theta, float ar[], float ai[])
 AudioAnalyzer::AudioAnalyzer(int frequency_, int captureSize_) :
 	frequency(frequency_), captureSize(captureSize_), initialized(false)
 {
-    ALenum errorCode=0;
+	ALenum errorCode=0;
 	inputDevice = alcCaptureOpenDevice(NULL, frequency, AL_FORMAT_MONO16, frequency/2);
 	if (inputDevice == NULL) {
 		Logger::Instance()->OutputString("Error: alcCaptureOpenDevice");
@@ -54,21 +54,21 @@ AudioAnalyzer::AudioAnalyzer(int frequency_, int captureSize_) :
 		Logger::Instance()->OutputString("Error: alcCaptureOpenDevice -- ?");
 		return;
 	}
-    alcCaptureStart(inputDevice); // Begin capturing
-    errorCode = alcGetError(inputDevice);
+	alcCaptureStart(inputDevice); // Begin capturing
+	errorCode = alcGetError(inputDevice);
 	if (errorCode != AL_NO_ERROR) {
 		Logger::Instance()->OutputString("Error: alcCaptureStart");
 		alcCaptureCloseDevice(inputDevice);
 		return;
 	}
 
-    capturedBuffer = new  short[captureSize];
-    ffted = new float[captureSize];
+	capturedBuffer = new  short[captureSize];
+	ffted = new float[captureSize];
 	ar = new float[captureSize];
 	ai = new float[captureSize];
 
 	initialized = true;
-	
+
 	Logger::Instance()->OutputString("OpenAL succeeded");
 }
 	

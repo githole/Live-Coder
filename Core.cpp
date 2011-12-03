@@ -111,13 +111,20 @@ int Core::ProcessSDLEvents() {
     while (SDL_PollEvent(&eve)) {
         switch(eve.type) {
         case SDL_KEYDOWN:
-			keyAnalyzer.Set(eve.key.keysym.sym, true);
+			if (editMode)
+				keyAnalyzer.Set(eve.key.keysym.sym, true);
 			if (eve.key.keysym.sym == SDLK_ESCAPE)
 				return -1;
-			if (SDLK_F1 <= eve.key.keysym.sym && eve.key.keysym.sym <= SDLK_F12) {
+			if (SDLK_F1 <= eve.key.keysym.sym && eve.key.keysym.sym <= SDLK_F12 && eve.key.keysym.sym != SDLK_F11) {
 				nowEffect = eve.key.keysym.sym - SDLK_F1;
 				shaderGL[nowEffect].CompileFromFile(EffectFileTable[nowEffect]);
 				textEditor.Load(EffectFileTable[nowEffect]);
+			}
+			if (eve.key.keysym.sym== SDLK_F11) {
+				if (editMode)
+					editMode = false;
+				else
+					editMode = true;
 			}
             break;
         case SDL_KEYUP:
@@ -154,7 +161,7 @@ void Core::Render() {
 	float low = 0.0;
 	float mid = 0.0;
 	float high = 0.0;
-	
+	float cy = 0.0;
 	if (shaderGL[nowEffect].Valid()) {
 		shaderGL[nowEffect].Bind();
 		shaderGL[nowEffect].SetUniform("resolution", (float)width, (float)height);
@@ -206,55 +213,94 @@ void Core::Render() {
 		glRecti(1, 1, -1, -1);
 		shaderGL[nowEffect].Unbind();
 	}
-	keyAnalyzer.Input(&textEditor, EffectFileTable[nowEffect]);
-	glPushMatrix();
-	glTranslatef(-0.98f,0.98f,0);
-//	BitmapFontGL::Instance()->DrawString(textEditor.ToString().c_str(), width/static_cast<float>(height), 1920/2);	
+	
+	if (editMode) {
+		keyAnalyzer.Input(&textEditor, EffectFileTable[nowEffect]);
+		glPushMatrix();
+		// TextEditor Background
+		const float aspect = width/static_cast<float>(height);
+		const float textEditorHeight = textEditor.GetMaxLineNum() * 11 * (0.25f * 8.0f / width * aspect);
+		const float textEditorBGHeight = textEditorHeight * 1.2f;
+		const float editorOffsetY =  -(2.0 - textEditorHeight) / 2.0;
+		const float editorBGOffsetY =  -(2.0 - textEditorBGHeight) / 2.0;
+		glPushMatrix();
+		glTranslatef(-1.0f, 1.0f + editorBGOffsetY, 0);
+		glPushAttrib(GL_ENABLE_BIT);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+			
+		glEnable(GL_BLEND);
+		glDisable(GL_DEPTH_TEST);
+		glBegin(GL_QUADS);
+			glColor4f(0.0, 0.0, 0.0, 0.0);
+			glVertex2f(0.0, 0.0);
+			glVertex2f(0.0 + width, 0.0);
+			glColor4f(0.0, 0.0, 0.0, 0.8);
+			glVertex2f(0.0 + width, -textEditorBGHeight/6.0);
+			glVertex2f(0.0, -textEditorBGHeight/6.0);
+		glEnd();	
+		glBegin(GL_QUADS);
+			glColor4f(0.0, 0.0, 0.0, 0.8);
+			glVertex2f(0.0, -textEditorBGHeight/6.0);
+			glVertex2f(0.0 + width, - textEditorBGHeight/6.0);
+			glColor4f(0.0, 0.0, 0.0, 0.8);
+			glVertex2f(0.0 + width,  -5.0*textEditorBGHeight/6.0 );
+			glVertex2f(0.0,  -5.0*textEditorBGHeight/6.0  );
+		glEnd();	
+		glBegin(GL_QUADS);
+			glColor4f(0.0, 0.0, 0.0, 0.8);
+			glVertex2f(0.0,-5.0*textEditorBGHeight/6.0);
+			glVertex2f(0.0 + width  ,  -5.0*textEditorBGHeight/6.0);
+			glColor4f(0.0, 0.0, 0.0, 0.0);
+			glVertex2f(0.0 + width,  -textEditorBGHeight);
+			glVertex2f(0.0, - textEditorBGHeight);
+		glEnd();	
+		glPopAttrib();
+		glPopMatrix();
+			
+		glTranslatef(-1.0f, 1.0f + editorOffsetY,0);
+		TextEditorPtrBuffer ptrbuf = textEditor.GetVisibleText();
 
-
-	TextEditorPtrBuffer ptrbuf = textEditor.GetVisibleText();
-
-	bool upAlpha = true;
-	bool downAlpha = true;
+		bool upAlpha = true;
+		bool downAlpha = true;
 	
 
-	if (textEditor.GetLineOffset() == 0) {
-		upAlpha = false;
-	}
-
-	if (textEditor.GetLineOffset() + textEditor.GetMaxLineNum() >= textEditor.GetLineNum()) {
-		downAlpha = false;
-	}
-
-	const int transRange = 5;
-	float cy = 0.0;
-
-	for (int i = 0; i < ptrbuf.size(); i ++) {
-		float up = 1.0;
-		float down = 1.0;
-
-		if (upAlpha) {
-			if (i < transRange) {
-				up = (float)i/transRange;
-				down = (float)(i + 1)/transRange;
-			}
-		}
-		if (downAlpha) {
-			if (i >= ptrbuf.size() - transRange) {
-				up = 1.0 - (float)(i - ptrbuf.size() + transRange)/transRange;
-				down = 1.0 - (float)(i + 1 - ptrbuf.size() + transRange)/transRange;
-			}
+		if (textEditor.GetLineOffset() == 0) {
+			upAlpha = false;
 		}
 
-		BitmapFontGL::Instance()->DrawLine(ptrbuf[i]->c_str(), width/static_cast<float>(height), width, i, up, down);	
-		if (i == textEditor.GetCursorPosition().col)
-			cy = height - i * 11 - 11;
-	}
-	BitmapFontGL::Instance()->DrawLine(EffectFileTable[nowEffect], width/static_cast<float>(height), width, textEditor.GetMaxLineNum(), 0.5, 0.5);	
+		if (textEditor.GetLineOffset() + textEditor.GetMaxLineNum() >= textEditor.GetLineNum()) {
+			downAlpha = false;
+		}
 
-	EditorCursor cursor = textEditor.GetCursorPosition();
-	BitmapFontGL::Instance()->DrawCursor(cursor.col, cursor.row, width/static_cast<float>(height), width);
-	glPopMatrix();
+		const int transRange = 5;
+
+		for (int i = 0; i < ptrbuf.size(); i ++) {
+			float up = 1.0;
+			float down = 1.0;
+
+			if (upAlpha) {
+				if (i < transRange) {
+					up = (float)i/transRange;
+					down = (float)(i + 1)/transRange;
+				}
+			}
+			if (downAlpha) {
+				if (i >= ptrbuf.size() - transRange) {
+					up = 1.0 - (float)(i - ptrbuf.size() + transRange)/transRange;
+					down = 1.0 - (float)(i + 1 - ptrbuf.size() + transRange)/transRange;
+				}
+			}
+
+			BitmapFontGL::Instance()->DrawLine(ptrbuf[i]->c_str(), aspect, width, i, up, down);	
+			if (i == textEditor.GetCursorPosition().col)
+				cy = height - i * 11 - 11/2.0 + height * editorOffsetY/2.0;
+		}
+		BitmapFontGL::Instance()->DrawLine(EffectFileTable[nowEffect], aspect, width, textEditor.GetMaxLineNum(), 0.5, 0.5);	
+
+		EditorCursor cursor = textEditor.GetCursorPosition();
+		BitmapFontGL::Instance()->DrawCursor(cursor.col, cursor.row, aspect, width);
+		glPopMatrix();
+	}
 
 	// レンダーターゲット元に戻す
 	
@@ -325,7 +371,7 @@ int Core::MainLoop() {
 	return 0;
 }
 
-Core::Core() : width(0), height(0), end(false), nowEffect(0) {
+Core::Core() : width(0), height(0), end(false), nowEffect(0), editMode(true) {
 	// OpenAL
 	audioAnalyzer = new AudioAnalyzer(44100, 1024);
 }
