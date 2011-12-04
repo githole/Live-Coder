@@ -65,6 +65,7 @@ class BitmapFontGL
 					 0.25f * 8.0f / width * aspect,
 					 0.25f * 8.0f / width);
 					glBegin(GL_QUADS);
+							glColor4f(1.0, 1.0, 1.0, 1.0);
 							glVertex2i  (ddx              , ddy       );
 							glVertex2i  (ddx + w  , ddy       );
 							glVertex2i  (ddx + w  , ddy - fontHeight  );
@@ -74,7 +75,7 @@ class BitmapFontGL
 			glPopMatrix();
 		}
 
-		void DrawLine(const char* strbuf, float aspect, float width, int line, float upAlpha, float downAlpha) {
+		void DrawLine(const char* strbuf, float aspect, float width, int line, float upAlpha, float downAlpha, float red = 1.0f, float green = 1.0f, float blue = 1.0f) {
 			unsigned int fontWidth = 7;
 			unsigned int fontHeight = 11;
 			unsigned int ddx = 0;
@@ -110,12 +111,12 @@ class BitmapFontGL
 					float dty = 1.0f /  6.0f;
 				
 					glBegin(GL_QUADS);
-						glColor4f(1.0, 1.0, 1.0, upAlpha);
+						glColor4f(red, green, blue, upAlpha);
 						glTexCoord2f(ptx              , pty       );
 						glVertex2i  (ddx              , ddy       );
 						glTexCoord2f(ptx + dtx        , pty       );
 						glVertex2i  (ddx + fontWidth  , ddy       );
-						glColor4f(1.0, 1.0, 1.0, downAlpha);
+						glColor4f(red, green, blue, downAlpha);
 						glTexCoord2f(ptx + dtx        , pty - dty );
 						glVertex2i  (ddx + fontWidth  , ddy - fontHeight  );
 						glTexCoord2f(ptx              , pty - dty );

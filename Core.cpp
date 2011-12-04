@@ -151,7 +151,10 @@ void Core::Render() {
 	if (nowSource != str) {
 		nowSource = str;
 
-		shaderGL[nowEffect].Compile(nowSource);
+		if (shaderGL[nowEffect].Compile(nowSource) != 0)
+			nowCompiled = true;
+		else
+			nowCompiled = false;
 	}
 
 	Uint32 nowTime = SDL_GetTicks();
@@ -161,7 +164,7 @@ void Core::Render() {
 	float low = 0.0;
 	float mid = 0.0;
 	float high = 0.0;
-	float cy = 0.0;
+	float cy = -9999.0;
 	if (shaderGL[nowEffect].Valid()) {
 		shaderGL[nowEffect].Bind();
 		shaderGL[nowEffect].SetUniform("resolution", (float)width, (float)height);
@@ -234,20 +237,20 @@ void Core::Render() {
 			glColor4f(0.0, 0.0, 0.0, 0.0);
 			glVertex2f(0.0, 0.0);
 			glVertex2f(0.0 + width, 0.0);
-			glColor4f(0.0, 0.0, 0.0, 0.8);
+			glColor4f(0.0, 0.0, 0.0, 0.7);
 			glVertex2f(0.0 + width, -textEditorBGHeight/6.0);
 			glVertex2f(0.0, -textEditorBGHeight/6.0);
 		glEnd();	
 		glBegin(GL_QUADS);
-			glColor4f(0.0, 0.0, 0.0, 0.8);
+			glColor4f(0.0, 0.0, 0.0, 0.7);
 			glVertex2f(0.0, -textEditorBGHeight/6.0);
 			glVertex2f(0.0 + width, - textEditorBGHeight/6.0);
-			glColor4f(0.0, 0.0, 0.0, 0.8);
+			glColor4f(0.0, 0.0, 0.0, 0.7);
 			glVertex2f(0.0 + width,  -5.0*textEditorBGHeight/6.0 );
 			glVertex2f(0.0,  -5.0*textEditorBGHeight/6.0  );
 		glEnd();	
 		glBegin(GL_QUADS);
-			glColor4f(0.0, 0.0, 0.0, 0.8);
+			glColor4f(0.0, 0.0, 0.0, 0.7);
 			glVertex2f(0.0,-5.0*textEditorBGHeight/6.0);
 			glVertex2f(0.0 + width  ,  -5.0*textEditorBGHeight/6.0);
 			glColor4f(0.0, 0.0, 0.0, 0.0);
@@ -295,8 +298,13 @@ void Core::Render() {
 			if (i == textEditor.GetCursorPosition().col)
 				cy = height - i * 11 - 11/2.0 + height * editorOffsetY/2.0;
 		}
-		BitmapFontGL::Instance()->DrawLine(EffectFileTable[nowEffect], aspect, width, textEditor.GetMaxLineNum(), 0.5, 0.5);	
+		
 
+		if (nowCompiled)
+			BitmapFontGL::Instance()->DrawLine(EffectFileTable[nowEffect], aspect, width, textEditor.GetMaxLineNum(), 0.5, 0.5);	
+		else
+			BitmapFontGL::Instance()->DrawLine(EffectFileTable[nowEffect], aspect, width, textEditor.GetMaxLineNum(), 0.5, 0.5, 1.0, 0.0, 0.0);	
+		
 		EditorCursor cursor = textEditor.GetCursorPosition();
 		BitmapFontGL::Instance()->DrawCursor(cursor.col, cursor.row, aspect, width);
 		glPopMatrix();
@@ -371,7 +379,7 @@ int Core::MainLoop() {
 	return 0;
 }
 
-Core::Core() : width(0), height(0), end(false), nowEffect(0), editMode(true) {
+Core::Core() : width(0), height(0), end(false), nowEffect(0), editMode(true), nowCompiled(false) {
 	// OpenAL
 	audioAnalyzer = new AudioAnalyzer(44100, 1024);
 }
