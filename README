@@ -1,4 +1,5 @@
 For compilation
+* Included Makefile is made for Mac OS X
 
 - Windows(Microsoft Visual Studio)
 Requirement: OpenAL 1.1 SDK, SDL 1.2, GLEW 1.7.0
