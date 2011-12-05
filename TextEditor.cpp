@@ -127,6 +127,12 @@ EditorCursor TextEditor::GetCursorPosition() {
 }
 
 void TextEditor::Backspace() {
+	log.push_back(TextEditorLog(nowCursor, buffer, lineOffset));
+
+	if (log.size() > 1000) {
+		log.erase(log.begin(), log.begin() + 1);
+	}
+
 	UpdateLog();
 	if (nowCursor.row == 0) {
 		if (nowCursor.col > 0) {
@@ -193,6 +199,7 @@ void TextEditor::ClearBuffer() {
 	buffer.push_back("");
 	nowCursor = EditorCursor();
 	lineOffset = 0;
+	logIndex = -1;
 	log.clear();
 	log.push_back(TextEditorLog(nowCursor, buffer, lineOffset));
 }

@@ -188,7 +188,7 @@ void Core::Render() {
 			glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 			glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 			glTexImage1D(GL_TEXTURE_1D, 0, 1, 1024, 0 , GL_RED, GL_FLOAT, texture);
-			shaderGL[nowEffect].SetUniform("rawAudio", (int)0);
+			shaderGL[nowEffect].SetUniform("fft", (int)0);
 			
 
 			int lowband = (int)floor(500.0 * 1024.0 / 44100.0 + 0.5);
