@@ -95,6 +95,8 @@ int Core::Initialize(std::string title_ = "Title" , int width_ = DefaultWidth, i
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 	SDL_EventState(SDL_MOUSEMOTION, SDL_IGNORE);
+	SDL_EnableUNICODE(true);
+	SDL_EnableKeyRepeat(250, 25);
 	return 0;
 }
 
@@ -105,14 +107,18 @@ int Core::ProcessSDLEvents() {
 	SDL_PumpEvents();
 	int mouseX, mouseY;
 	SDL_GetMouseState(&mouseX, &mouseY);
-	mouseBuffer.SetPosition((float)mouseX / width, (float)mouseY / height);
+	mouseBuffer.SetPosition((0.5 - (float)mouseX / width) * 2.0, (0.5 - (float)mouseY / height) * 2.0);
 
 	keyBuffer.Clear();
     while (SDL_PollEvent(&eve)) {
         switch(eve.type) {
-        case SDL_KEYDOWN:
+		case SDL_KEYDOWN:
+			{
+			Uint16 ch = eve.key.keysym.unicode;
+			SDLKey key = isprint(ch) ? (SDLKey)ch : eve.key.keysym.sym;
+
 			if (editMode)
-				keyAnalyzer.Set(eve.key.keysym.sym, true);
+				keyAnalyzer.KeyHit(&textEditor, key, eve.key.keysym.mod, EffectFileTable[nowEffect]);
 			if (eve.key.keysym.sym == SDLK_ESCAPE)
 				return -1;
 			if (SDLK_F1 <= eve.key.keysym.sym && eve.key.keysym.sym <= SDLK_F12 && eve.key.keysym.sym != SDLK_F11) {
@@ -120,16 +126,16 @@ int Core::ProcessSDLEvents() {
 				shaderGL[nowEffect].CompileFromFile(EffectFileTable[nowEffect]);
 				textEditor.Load(EffectFileTable[nowEffect]);
 			}
-			if (eve.key.keysym.sym== SDLK_F11) {
+			if (eve.key.keysym.sym == SDLK_F11) {
 				if (editMode)
 					editMode = false;
 				else
 					editMode = true;
 			}
-            break;
-        case SDL_KEYUP:
-			keyAnalyzer.Set(eve.key.keysym.sym, false);
-            break;
+
+			}
+			break;
+
         case SDL_QUIT:
             return -1;
         }
@@ -218,7 +224,7 @@ void Core::Render() {
 	}
 	
 	if (editMode) {
-		keyAnalyzer.Input(&textEditor, EffectFileTable[nowEffect]);
+		//keyAnalyzer.Input(&textEditor, EffectFileTable[nowEffect]);
 		glPushMatrix();
 		// TextEditor Background
 		const float aspect = width/static_cast<float>(height);
