@@ -88,7 +88,13 @@ public:
 	TextEditorPtrBuffer GetText();
 	TextEditorPtrBuffer GetVisibleText();
 	const int GetMaxLineNum() { return maxLineNum; }
-	const int GetLineOffset() { return lineOffset; }
+	const int GetLineOffset() { 
+		if (logIndex == -1) {
+			return lineOffset;
+		} else {
+			return log[logIndex].lineOffset;
+		}
+	}
 	const int GetLineNum() {
 		if (logIndex == -1) {
 			return buffer.size();

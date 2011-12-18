@@ -6,8 +6,9 @@ void TextEditor::UpdateLog() {
 	if (logIndex != -1) {
 		nowCursor = log[logIndex].cursor;
 		buffer = log[logIndex].buffer;
+		lineOffset = log[logIndex].lineOffset;
 
-		std::vector<TextEditorLog>::iterator ite = log.begin() + logIndex + 1;
+		std::vector<TextEditorLog>::iterator ite = log.begin() + logIndex;
 		log.erase(ite, log.end());
 				
 		logIndex = -1;
@@ -218,6 +219,11 @@ void TextEditor::DeleteSelectedArea() {
 	}
 	nowCursor = selectStart_;
 
+	if (nowCursor.col < lineOffset) {
+		lineOffset = nowCursor.col - 1;
+	}
+	
+
 	EndSelect();
 }
 
@@ -329,7 +335,7 @@ void TextEditor::ClearBuffer() {
 	lineOffset = 0;
 	logIndex = -1;
 	log.clear();
-	log.push_back(TextEditorLog(nowCursor, buffer, lineOffset));
+//	log.push_back(TextEditorLog(nowCursor, buffer, lineOffset));
 }
 
 void TextEditor::Load(std::string filename) {
@@ -417,7 +423,7 @@ void TextEditor::Output() {
 
 TextEditor::TextEditor(void)
 {
-	maxLineNum = 32;
+	maxLineNum = 28;
 	lineOffset = 0;
 	selectMode = false;
 	// ˆês–Ú
