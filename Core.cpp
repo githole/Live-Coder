@@ -313,6 +313,32 @@ void Core::Render() {
 		
 		EditorCursor cursor = textEditor.GetCursorPosition();
 		BitmapFontGL::Instance()->DrawCursor(cursor.col, cursor.row, aspect, width);
+
+		if (textEditor.IsSelectMode()) {
+			EditorCursor selectStart = textEditor.GetSelectStart();
+			if (selectStart.col > cursor.col)
+				std::swap(selectStart, cursor);
+
+			if (selectStart.col == cursor.col) {
+				int start = selectStart.row;
+				int end = cursor.row;
+
+
+				BitmapFontGL::Instance()->DrawSelect(aspect, width, selectStart.col, start, end, 0.5, 0.5, 0.5);
+			} else {
+				for (int i = selectStart.col; i <= cursor.col; i ++) {
+					if (i == selectStart.col) {
+						BitmapFontGL::Instance()->DrawSelect(aspect, width, i, selectStart.row, textEditor.GetLineLength(i));
+					} else if (i < cursor.col) {
+						BitmapFontGL::Instance()->DrawSelect(aspect, width, i, 0, textEditor.GetLineLength(i));
+					} else if (i == cursor.col) {
+						BitmapFontGL::Instance()->DrawSelect(aspect, width, i, 0, cursor.row);
+					}
+				}
+			}
+		}
+//		BitmapFontGL::Instance()->DrawSelect(aspect, width, 5, 1, 9);
+
 		glPopMatrix();
 	}
 

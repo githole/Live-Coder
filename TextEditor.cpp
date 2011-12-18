@@ -125,14 +125,126 @@ EditorCursor TextEditor::GetCursorPosition() {
 		return cursor; 
 	}
 }
+void TextEditor::Copy() {
+	if (!IsSelectMode())
+		return;
 
-void TextEditor::Backspace() {
+	EditorCursor selectStart_ = selectStart;
+	EditorCursor selectEnd_ = nowCursor;
+
+	if (selectStart_.col > selectEnd_.col)
+		std::swap(selectStart_, selectEnd_);
+
+	copyBuffer.clear();
+
+	if (selectStart_.col == selectEnd_.col) { // single line
+		int start = selectStart_.row;
+		int end = selectEnd_.row;
+		if (start > end)
+			std::swap(start, end);
+		copyBuffer.push_back(buffer[selectStart_.col].substr(start, end - start));
+	} else { // multi line
+		for (int i = selectStart_.col; i <= selectEnd_.col; i ++) {
+
+			std::cout << buffer[i];
+			if (i == selectStart_.col) {
+				int start = selectStart_.row;
+				int end = buffer[i].length();
+				copyBuffer.push_back(buffer[i].substr(start, end - start));
+			} else if (i < selectEnd_.col) {
+				copyBuffer.push_back(buffer[i]);
+			} else {
+				int start = 0;
+				int end = selectEnd_.row;
+				copyBuffer.push_back(buffer[i].substr(start, end - start));
+			}
+		}
+	}
+}
+
+void TextEditor::DeleteSelectedArea() {
+	if (!IsSelectMode())
+		return;
+	
+	SnapShot();
+	EditorCursor selectStart_ = selectStart;
+	EditorCursor selectEnd_ = nowCursor;
+
+	if (selectStart_.col > selectEnd_.col)
+		std::swap(selectStart_, selectEnd_);
+
+	if (selectStart_.col == selectEnd_.col) { // single line
+		if (selectStart_.row > selectEnd_.row)
+			std::swap(selectStart_, selectEnd_);
+		int start = selectStart_.row;
+		int end = selectEnd_.row;
+
+		buffer[selectStart_.col].erase(start, end - start);
+
+	} else { // multi line
+		for (int i = selectStart_.col; i <= selectEnd_.col; i ++) {
+
+			std::cout << buffer[i];
+			if (i == selectStart_.col) {
+				int start = selectStart_.row;
+				int end = buffer[i].length();
+				buffer[i].erase(start, end - start);
+			} else if (i < selectEnd_.col) {
+				// Ç∆ÇËÇ†Ç¶Ç∏âΩÇ‡ÇµÇ»Ç¢
+//				copyBuffer.push_back(buffer[i]);
+			} else {
+				int start = 0;
+				int end = selectEnd_.row;
+				buffer[i].erase(start, end - start);
+			}
+		}
+		
+		buffer[selectStart_.col] += buffer[selectEnd_.col];
+		buffer.erase(buffer.begin() + selectStart_.col + 1, buffer.begin() + selectEnd_.col + 1);
+	}
+	nowCursor = selectStart_;
+
+	EndSelect();
+}
+
+void TextEditor::Paste() {
+	SnapShot();
+	for (int i = 0; i < copyBuffer.size(); i ++) {
+		if (i > 0)
+			InsertCharacter('\n', false, false);
+		for (int j = 0; j < copyBuffer[i].length(); j ++) {
+			InsertCharacter(copyBuffer[i][j], false, false);
+		}
+	}
+}
+
+
+EditorCursor TextEditor::GetSelectStart() {
+	EditorCursor cursor;
+	cursor.row = selectStart.row;
+	cursor.col = selectStart.col - lineOffset;
+	return cursor; 
+}
+void TextEditor::BeginSelect() {
+	selectMode = true;
+	selectStart = nowCursor;
+}
+
+void TextEditor::EndSelect() {
+	selectMode = false;
+}
+
+
+void TextEditor::SnapShot() {
 	log.push_back(TextEditorLog(nowCursor, buffer, lineOffset));
 
 	if (log.size() > 1000) {
 		log.erase(log.begin(), log.begin() + 1);
 	}
+}
 
+void TextEditor::Backspace() {
+	SnapShot();
 	UpdateLog();
 	if (nowCursor.row == 0) {
 		if (nowCursor.col > 0) {
@@ -167,6 +279,7 @@ void TextEditor::End() {
 }
 
 void TextEditor::Undo() {
+	EndSelect();
 	if (logIndex == -1) {
 		logIndex = log.size() - 1;
 	} else {
@@ -176,6 +289,7 @@ void TextEditor::Undo() {
 }
 
 void TextEditor::Redo() {
+	EndSelect();
 	if (logIndex == -1) {
 	} else {
 		if (logIndex < log.size() - 1) {
@@ -206,6 +320,8 @@ void TextEditor::ClearBuffer() {
 
 void TextEditor::Load(std::string filename) {
 	FILE *fp = fopen(filename.c_str(), "rt");
+
+	EndSelect();
 	
 	ClearBuffer();
 	if (fp != NULL){
@@ -224,11 +340,7 @@ void TextEditor::Load(std::string filename) {
 
 void TextEditor::InsertCharacter(char ch, bool historyEnable, bool autoIndent) {
 	if (historyEnable) {
-		log.push_back(TextEditorLog(nowCursor, buffer, lineOffset));
-
-		if (log.size() > 1000) {
-			log.erase(log.begin(), log.begin() + 1);
-		}
+		SnapShot();
 	}
 
 	UpdateLog();
@@ -293,6 +405,7 @@ TextEditor::TextEditor(void)
 {
 	maxLineNum = 32;
 	lineOffset = 0;
+	selectMode = false;
 	// àÍçsñ⁄
 	buffer.push_back("");
 	log.push_back(TextEditorLog(nowCursor, buffer, lineOffset));

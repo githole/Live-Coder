@@ -75,6 +75,32 @@ class BitmapFontGL
 			glPopMatrix();
 		}
 
+		void DrawSelect(float aspect, float width, int line, int start, int end, float red = 1.0f, float green = 1.0f, float blue = 1.0f) {
+			unsigned int fontWidth = 7;
+			unsigned int fontHeight = 11;
+			unsigned int ddx = start * fontWidth;
+			unsigned int ddy = -line * fontHeight;
+			unsigned int w = 4 + (end - start) * fontWidth;
+			glPushMatrix();
+			glPushAttrib(GL_ENABLE_BIT);
+			glDisable(GL_TEXTURE_2D);
+			glDisable(GL_TEXTURE_1D);
+			glEnable(GL_BLEND);
+			glBlendFunc(GL_ONE_MINUS_DST_COLOR, GL_ONE_MINUS_SRC_COLOR);
+			glScalef(0.25f * 8.0f / width,
+					 0.25f * 8.0f / width * aspect,
+					 0.25f * 8.0f / width);
+					glBegin(GL_QUADS);
+							glColor4f(1.0, 1.0, 1.0, 1.0);
+							glVertex2i  (ddx              , ddy       );
+							glVertex2i  (ddx + w  , ddy       );
+							glVertex2i  (ddx + w  , ddy - fontHeight  );
+							glVertex2i  (ddx              , ddy - fontHeight  );
+					glEnd();	
+			glPopAttrib();
+			glPopMatrix();
+		}
+
 		void DrawLine(const char* strbuf, float aspect, float width, int line, float upAlpha, float downAlpha, float red = 1.0f, float green = 1.0f, float blue = 1.0f) {
 			unsigned int fontWidth = 7;
 			unsigned int fontHeight = 11;
@@ -95,7 +121,6 @@ class BitmapFontGL
 			//glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
 			
 			glEnable(GL_COLOR_MATERIAL);
-			
 
 			glBindTexture(GL_TEXTURE_2D, texName);
 			unsigned int strend = strlen(strbuf);
@@ -109,7 +134,7 @@ class BitmapFontGL
 					float pty = 1.0f - highbit / 6.0f;
 					float dtx = 1.0f / 16.0f;
 					float dty = 1.0f /  6.0f;
-				
+
 					glBegin(GL_QUADS);
 						glColor4f(red, green, blue, upAlpha);
 						glTexCoord2f(ptx              , pty       );
@@ -134,62 +159,6 @@ class BitmapFontGL
 			glPopAttrib();
 			glPopMatrix();
 		}
-		/*
-		void DrawString(const char* strbuf, float aspect, float width)
-		{
-			unsigned int fontWidth = 7;
-			unsigned int fontHeight = 11;
-			unsigned int ddx = 0;
-			unsigned int ddy = 0;
-			glPushMatrix();
-			glScalef(0.25f * 8.0f / width,
-					 0.25f * 8.0f / width * aspect,
-					 0.25f * 8.0f / width);
-			glPushAttrib(GL_ENABLE_BIT);
-			glEnable(GL_TEXTURE_2D);
-			glEnable(GL_BLEND);
-			glDisable(GL_DEPTH_TEST);
-			//glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_COLOR);
-			glBlendFunc(GL_ONE_MINUS_DST_COLOR, GL_ONE_MINUS_SRC_COLOR);
-			//glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
-			//glEnable(GL_COLOR_MATERIAL);
-			//glColor3f(0.4f, 1.0f, 0.4f);
-
-			glBindTexture(GL_TEXTURE_2D, texName);
-			unsigned int strend = strlen(strbuf);
-			for(unsigned int strptr = 0; strptr < strend; strptr++)
-			{
-				if (strbuf[strptr] >= 0x20 && strbuf[strptr] < 0x80)
-				{
-					unsigned int lowbit = (strbuf[strptr] - 0x20) & 0x0F;
-					unsigned int highbit = ((strbuf[strptr] - 0x20) >> 4) & 0x0F;
-					float ptx = lowbit / 16.0f;
-					float pty = 1.0f - highbit / 6.0f;
-					float dtx = 1.0f / 16.0f;
-					float dty = 1.0f /  6.0f;
-				
-					glBegin(GL_QUADS);
-						glTexCoord2f(ptx              , pty       );
-						glVertex2i  (ddx              , ddy       );
-						glTexCoord2f(ptx + dtx        , pty       );
-						glVertex2i  (ddx + fontWidth  , ddy       );
-						glTexCoord2f(ptx + dtx        , pty - dty );
-						glVertex2i  (ddx + fontWidth  , ddy - fontHeight  );
-						glTexCoord2f(ptx              , pty - dty );
-						glVertex2i  (ddx              , ddy - fontHeight  );
-					glEnd();	
-				}
-				
-				ddx += fontWidth;
-				if (strbuf[strptr] == 0xA || strbuf[strptr] == 0xC)
-				{
-					ddx = 0;
-					ddy -= fontHeight;
-				}
-			}
-			glPopAttrib();
-			glPopMatrix();
-		}*/
 };
 
 };

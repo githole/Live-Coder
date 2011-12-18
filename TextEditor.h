@@ -49,6 +49,11 @@ private:
 
 	int maxLineNum;
 	int lineOffset;
+
+	bool selectMode;
+	EditorCursor selectStart, selectEnd;
+
+	TextEditorBuffer copyBuffer;
 public:
 	void MoveCursor(enum EditorCursorMoveType type);
 	void InsertCharacter(char ch, bool historyEnable = true, bool autoIndent = true);
@@ -61,6 +66,17 @@ public:
 	void Redo();
 	void Home();
 	void End();
+
+	void Copy();
+	void DeleteSelectedArea();
+	void Paste();
+
+	void SnapShot();
+
+	void BeginSelect();
+	void EndSelect();
+	bool IsSelectMode() { return selectMode; }
+	EditorCursor GetSelectStart();
 
 	void UpdateLog();
 
@@ -78,6 +94,12 @@ public:
 		} else {
 			return log[logIndex].buffer.size();
 		}
+	}
+
+	const int GetLineLength(const int line) {
+		if (line+lineOffset >= 0 && line+lineOffset < buffer.size())
+			return buffer[line + lineOffset].length();
+		return 0;
 	}
 
 	std::string ToString();
