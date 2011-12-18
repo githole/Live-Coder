@@ -85,6 +85,7 @@ public:
 
 	EditorCursor GetCursorPosition();
 
+	TextEditorPtrBuffer GetText();
 	TextEditorPtrBuffer GetVisibleText();
 	const int GetMaxLineNum() { return maxLineNum; }
 	const int GetLineOffset() { return lineOffset; }

@@ -94,6 +94,20 @@ std::string TextEditor::ToString() {
 	return str;
 }
 
+TextEditorPtrBuffer TextEditor::GetText() {
+	TextEditorPtrBuffer buf;
+	if (logIndex == -1) {
+		for (int i = 0; i < buffer.size(); i ++) {
+			buf.push_back(&buffer[i]);
+		}
+	} else {
+		int offset = log[logIndex].lineOffset;
+		for (int i = 0; i < log[logIndex].buffer.size(); i ++) {
+			buf.push_back(&log[logIndex].buffer[i]);
+		}
+	}
+	return buf;
+}
 
 TextEditorPtrBuffer TextEditor::GetVisibleText() {
 	TextEditorPtrBuffer buf;
