@@ -327,6 +327,9 @@ void Core::Render() {
 				BitmapFontGL::Instance()->DrawSelect(aspect, width, selectStart.col, start, end, 0.5, 0.5, 0.5);
 			} else {
 				for (int i = selectStart.col; i <= cursor.col; i ++) {
+					if (i < 0 || i >= textEditor.GetMaxLineNum())
+						continue;
+
 					if (i == selectStart.col) {
 						BitmapFontGL::Instance()->DrawSelect(aspect, width, i, selectStart.row, textEditor.GetLineLength(i));
 					} else if (i < cursor.col) {

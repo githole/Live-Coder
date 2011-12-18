@@ -16,5 +16,8 @@ F11: Toggle Edit Mode
 F12: Edit Post FX File
 Ctrl+S: Save
 Ctrl+O: Load
-Ctrl+/: Undo
-Ctrl+.: Redo
+Ctrl+Z: Undo
+Ctrl+Y: Redo
+Ctrl+C: Copy
+Ctrl+V: Paste
+Ctrl+X: Cut
