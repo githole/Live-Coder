@@ -171,6 +171,12 @@ void Core::Render() {
 	float mid = 0.0;
 	float high = 0.0;
 	float cy = -9999.0;
+
+	const int fontWidth = 10;
+	const int fontHeight = 15;
+	BitmapFontGL::Instance()->SetFontSize(fontWidth, fontHeight);
+
+
 	if (shaderGL[nowEffect].Valid()) {
 		shaderGL[nowEffect].Bind();
 		shaderGL[nowEffect].SetUniform("resolution", (float)width, (float)height);
@@ -228,7 +234,7 @@ void Core::Render() {
 		glPushMatrix();
 		// TextEditor Background
 		const float aspect = width/static_cast<float>(height);
-		const float textEditorHeight = textEditor.GetMaxLineNum() * 11 * (0.25f * 8.0f / width * aspect);
+		const float textEditorHeight = textEditor.GetMaxLineNum() * fontHeight * (0.25f * 8.0f / width * aspect);
 		const float textEditorBGHeight = textEditorHeight * 1.2f;
 		const float editorOffsetY =  -(2.0 - textEditorHeight) / 2.0;
 		const float editorBGOffsetY =  -(2.0 - textEditorBGHeight) / 2.0;
@@ -243,22 +249,22 @@ void Core::Render() {
 			glColor4f(0.0, 0.0, 0.0, 0.0);
 			glVertex2f(0.0, 0.0);
 			glVertex2f(0.0 + width, 0.0);
-			glColor4f(0.0, 0.0, 0.0, 0.7);
-			glVertex2f(0.0 + width, -textEditorBGHeight/6.0);
-			glVertex2f(0.0, -textEditorBGHeight/6.0);
+			glColor4f(0.0, 0.0, 0.0, 0.8);
+			glVertex2f(0.0 + width, -textEditorBGHeight/5.0);
+			glVertex2f(0.0, -textEditorBGHeight/5.0);
 		glEnd();	
 		glBegin(GL_QUADS);
-			glColor4f(0.0, 0.0, 0.0, 0.7);
-			glVertex2f(0.0, -textEditorBGHeight/6.0);
-			glVertex2f(0.0 + width, - textEditorBGHeight/6.0);
-			glColor4f(0.0, 0.0, 0.0, 0.7);
-			glVertex2f(0.0 + width,  -5.0*textEditorBGHeight/6.0 );
-			glVertex2f(0.0,  -5.0*textEditorBGHeight/6.0  );
+			glColor4f(0.0, 0.0, 0.0, 0.8);
+			glVertex2f(0.0, -textEditorBGHeight/5.0);
+			glVertex2f(0.0 + width, - textEditorBGHeight/5.0);
+			glColor4f(0.0, 0.0, 0.0, 0.8);
+			glVertex2f(0.0 + width,  -4.0*textEditorBGHeight/5.0 );
+			glVertex2f(0.0,  -4.0*textEditorBGHeight/5.0  );
 		glEnd();	
 		glBegin(GL_QUADS);
-			glColor4f(0.0, 0.0, 0.0, 0.7);
-			glVertex2f(0.0,-5.0*textEditorBGHeight/6.0);
-			glVertex2f(0.0 + width  ,  -5.0*textEditorBGHeight/6.0);
+			glColor4f(0.0, 0.0, 0.0, 0.8);
+			glVertex2f(0.0,-4.0*textEditorBGHeight/5.0);
+			glVertex2f(0.0 + width  ,  -4.0*textEditorBGHeight/5.0);
 			glColor4f(0.0, 0.0, 0.0, 0.0);
 			glVertex2f(0.0 + width,  -textEditorBGHeight);
 			glVertex2f(0.0, - textEditorBGHeight);
@@ -268,6 +274,7 @@ void Core::Render() {
 			
 		glTranslatef(-1.0f, 1.0f + editorOffsetY,0);
 		TextEditorPtrBuffer ptrbuf = textEditor.GetVisibleText();
+		TextEditorPtrBuffer textbuf = textEditor.GetText();
 
 		bool upAlpha = true;
 		bool downAlpha = true;
@@ -282,6 +289,10 @@ void Core::Render() {
 		}
 
 		const int transRange = 5;
+		BitmapFontGL::Instance()->Reset();
+		for (int i = 0; i < textEditor.GetLineOffset(); i ++) {
+			BitmapFontGL::Instance()->ProcessComment(*textbuf[i]);
+		}
 
 		for (int i = 0; i < ptrbuf.size(); i ++) {
 			float up = 1.0;
@@ -302,7 +313,7 @@ void Core::Render() {
 
 			BitmapFontGL::Instance()->DrawLine(ptrbuf[i]->c_str(), aspect, width, i, up, down);	
 			if (i == textEditor.GetCursorPosition().col)
-				cy = height - i * 11 - 11/2.0 + height * editorOffsetY/2.0;
+				cy = height - i * fontHeight - fontHeight/2.0 + height * editorOffsetY/2.0;
 		}
 		
 
