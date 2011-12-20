@@ -21,3 +21,5 @@ Ctrl+Y: Redo
 Ctrl+C: Copy
 Ctrl+V: Paste
 Ctrl+X: Cut
+Ctrl+Home: Go to head
+Ctrl+End: Go to tail

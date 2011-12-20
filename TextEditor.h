@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 #include <iostream>
+#include <algorithm>
 
 namespace LiveCoder {
 
@@ -58,14 +59,21 @@ public:
 	void MoveCursor(enum EditorCursorMoveType type);
 	void InsertCharacter(char ch, bool historyEnable = true, bool autoIndent = true);
 	void Backspace();
+	void Delete();
 
 	void ScrollDown();
 	void ScrollUp();
 	
+	void MoveHead();
+	void MoveTail();
+
 	void Undo();
 	void Redo();
 	void Home();
 	void End();
+
+	void PageUp();
+	void PageDown();
 
 	void Copy();
 	void DeleteSelectedArea();

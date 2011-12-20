@@ -30,44 +30,46 @@ void KeyAnalyzer::KeyHit(TextEditor* textEditor, SDLKey key, SDLMod mod,  const 
 		}
 	}
 
-	if (32 <= key && key <= 126) {
-		if (mod & KMOD_CTRL) {
-			// unix like keybind
-			if (key == 'p' || key == 'P')
-				textEditor->MoveCursor(ECMT_UP);
-			else if (key == 'n' || key == 'N')
-				textEditor->MoveCursor(ECMT_DOWN);
-			else if (key == 'b' || key == 'B')
-				textEditor->MoveCursor(ECMT_LEFT);
-			else if (key == 'f' || key == 'F')
-				textEditor->MoveCursor(ECMT_RIGHT);
+	if (mod & KMOD_CTRL) {
+		// unix like keybind
+		if (key == 'p' || key == 'P')
+			textEditor->MoveCursor(ECMT_UP);
+		else if (key == 'n' || key == 'N')
+			textEditor->MoveCursor(ECMT_DOWN);
+		else if (key == 'b' || key == 'B')
+			textEditor->MoveCursor(ECMT_LEFT);
+		else if (key == 'f' || key == 'F')
+			textEditor->MoveCursor(ECMT_RIGHT);
 
-			// shortcut key
-			else if (key == 'z' || key == 'Z')
-				textEditor->Undo();
-			else if (key == 'y' || key == 'Y')
-				textEditor->Redo();
-			else if (key == 's' || key == 'S')
-				textEditor->Save(filename);
-			else if (key == 'o' || key == 'O')
-				textEditor->Load(filename);
-			else if (key == 'a' || key == 'A')
-				textEditor->Home();
-			else if (key == 'e' || key == 'E')
-				textEditor->End();
-			else if (key == 'c' || key == 'C')
-				textEditor->Copy();
-			else if (key == 'x' || key == 'X') {
-				textEditor->Copy();
-				textEditor->DeleteSelectedArea();
-			} else if (key == 'v' || key == 'V')
-				textEditor->Paste();
-		} else {
-			if (textEditor->IsSelectMode()) {
-				textEditor->DeleteSelectedArea();
-			}
-			textEditor->InsertCharacter(key);
+		// shortcut key
+		else if (key == 'z' || key == 'Z')
+			textEditor->Undo();
+		else if (key == 'y' || key == 'Y')
+			textEditor->Redo();
+		else if (key == 's' || key == 'S')
+			textEditor->Save(filename);
+		else if (key == 'o' || key == 'O')
+			textEditor->Load(filename);
+		else if (key == 'a' || key == 'A')
+			textEditor->Home();
+		else if (key == 'e' || key == 'E')
+			textEditor->End();
+		else if (key == 'c' || key == 'C')
+			textEditor->Copy();
+		else if (key == 'x' || key == 'X') {
+			textEditor->Copy();
+			textEditor->DeleteSelectedArea();
+		} else if (key == 'v' || key == 'V')
+			textEditor->Paste();
+		else if (key == SDLK_HOME)
+			textEditor->MoveHead();
+		else if (key == SDLK_END)
+			textEditor->MoveTail();
+	} else if (32 <= key && key <= 126) {
+		if (textEditor->IsSelectMode()) {
+			textEditor->DeleteSelectedArea();
 		}
+		textEditor->InsertCharacter(key);
 	} else {
 		switch (key) {
 		case SDLK_UP:
@@ -81,6 +83,13 @@ void KeyAnalyzer::KeyHit(TextEditor* textEditor, SDLKey key, SDLMod mod,  const 
 			break;
 		case SDLK_RIGHT:
 			textEditor->MoveCursor(ECMT_RIGHT);
+			break;
+
+		case SDLK_PAGEUP:
+			textEditor->PageUp();
+			break;
+		case SDLK_PAGEDOWN:
+			textEditor->PageDown();
 			break;
 
 		case SDLK_HOME:
@@ -97,6 +106,13 @@ void KeyAnalyzer::KeyHit(TextEditor* textEditor, SDLKey key, SDLMod mod,  const 
 				textEditor->DeleteSelectedArea();
 			} else {
 				textEditor->Backspace();
+			}
+			break;
+		case SDLK_DELETE:
+			if (textEditor->IsSelectMode()) {
+				textEditor->DeleteSelectedArea();
+			} else {
+				textEditor->Delete();
 			}
 			break;
 		case SDLK_TAB:

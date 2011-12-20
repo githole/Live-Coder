@@ -7,11 +7,12 @@ void TextEditor::UpdateLog() {
 		nowCursor = log[logIndex].cursor;
 		buffer = log[logIndex].buffer;
 		lineOffset = log[logIndex].lineOffset;
-
 		std::vector<TextEditorLog>::iterator ite = log.begin() + logIndex;
 		log.erase(ite, log.end());
-				
+
 		logIndex = -1;
+
+		SnapShot();
 	}
 }
 void TextEditor::ScrollDown() {
@@ -25,6 +26,41 @@ void TextEditor::ScrollUp() {
 	// è„ï˚å¸Ç…ÉXÉNÉçÅ[Éã
 	if (nowCursor.col < lineOffset) {
 		lineOffset --;
+	}
+}
+void TextEditor::PageUp() {
+	UpdateLog();
+	if (nowCursor.col - maxLineNum >= 0) {
+		nowCursor.col -= maxLineNum;
+		lineOffset -= maxLineNum;
+		if (lineOffset < 0)
+			lineOffset = 0;
+	} else {
+	}
+}
+
+void TextEditor::MoveHead() {
+	UpdateLog();
+	nowCursor.col = 0;
+	nowCursor.row = 0;
+	lineOffset = 0;
+}
+
+void TextEditor::MoveTail() {
+	UpdateLog();
+	nowCursor.col = buffer.size() - 1;
+	nowCursor.row = buffer[buffer.size() - 1].length();
+	lineOffset = nowCursor.col - maxLineNum + 1;
+	if (lineOffset < 0)
+		lineOffset = 0;
+}
+
+void TextEditor::PageDown() {
+	UpdateLog();
+	
+	if (nowCursor.col + maxLineNum < buffer.size()) {
+		nowCursor.col += maxLineNum;
+		lineOffset += maxLineNum;
 	}
 }
 	
@@ -77,13 +113,6 @@ void TextEditor::MoveCursor(enum EditorCursorMoveType type) {
 	}
 }
 std::string TextEditor::ToString() {
-	/*
-	std::string str;
-
-	for (int i = 0; i < buffer.size(); i ++)
-		str += buffer[i] + '\n';
-
-	return str;*/
 	std::string str;
 	if (logIndex == -1) {
 		for (int i = 0; i < buffer.size(); i ++)
@@ -279,6 +308,21 @@ void TextEditor::Backspace() {
 	} else {
 		buffer[nowCursor.col].erase(nowCursor.row - 1, 1);
 		nowCursor.row --;
+	}
+}
+
+void TextEditor::Delete() {
+	SnapShot();
+	UpdateLog();
+
+	if (nowCursor.row ==  buffer[nowCursor.col].length()) {
+		if (nowCursor.col < buffer.size() - 1) {
+			buffer[nowCursor.col] += buffer[nowCursor.col + 1];
+			std::vector<std::string>::iterator ite = buffer.begin() + nowCursor.col + 1;
+			buffer.erase(ite);
+		}
+	} else {
+		buffer[nowCursor.col].erase(nowCursor.row, 1);
 	}
 }
 
