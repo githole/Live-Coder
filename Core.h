@@ -71,6 +71,9 @@ private:
 	GLuint frameBuffer;
 	GLuint renderBuffer;
 	GLuint renderTexture;
+
+	// ©•ª‚ÅD‚«‚È‚Ä‚­‚·‚¿‚á‚ğg‚¦‚é‚Æ‚¤‚ê‚µ‚¢‚Ë
+	GLuint optionTexture;
 public:
 
 	int Initialize(std::string title_, int width_, int height_, int SDLflags);

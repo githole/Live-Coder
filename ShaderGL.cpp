@@ -102,6 +102,7 @@ GLuint ShaderGL::CompileFromFile(const std::string& filename) {
 		fclose(fp);
 
 		return Compile(fsshader);
+
 	}
 	return 0;
 }

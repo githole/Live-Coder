@@ -66,6 +66,44 @@ int Core::Initialize(std::string title_ = "Title" , int width_ = DefaultWidth, i
 	Logger::Instance()->OutputString("glewInit succeeded");
 #endif	__WIN32__
 
+	// オプションのテクスチャ
+	glGenTextures(1, &optionTexture);
+	SDL_Surface* bmp = SDL_LoadBMP("option.bmp");
+	if (bmp != NULL) {
+		Uint32 rmask, gmask, bmask, amask;
+#if SDL_BYTEORDER == SDL_BIG_ENDIAN
+		rmask = 0xff000000;
+		gmask = 0x00ff0000;
+		bmask = 0x0000ff00;
+		amask = 0x000000ff;
+#else
+		rmask = 0x000000ff;
+		gmask = 0x0000ff00;
+		bmask = 0x00ff0000;
+		amask = 0xff000000;
+#endif
+		SDL_Surface* tmp = SDL_CreateRGBSurface(SDL_SWSURFACE, bmp->w, bmp->h, 32, rmask, gmask, bmask, amask);
+		SDL_Rect rect;
+		rect.x = rect.y = 0;
+		rect.w = bmp->w; rect.h = bmp->h;
+		SDL_BlitSurface(bmp, &rect, tmp, &rect);
+
+		SDL_LockSurface(tmp);
+		glActiveTexture(GL_TEXTURE1);
+		glBindTexture(GL_TEXTURE_2D, optionTexture);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, bmp->w, bmp->h, 0, GL_RGBA, GL_UNSIGNED_BYTE, tmp->pixels);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glActiveTexture(GL_TEXTURE0);
+		SDL_UnlockSurface(tmp);
+
+		SDL_FreeSurface(tmp);
+		SDL_FreeSurface(bmp);
+	} else {
+		Logger::Instance()->OutputString("Error: SDL_LoadBMP");
+	}
+
+
 	frameBuffer = 0;
 	renderBuffer = 0;
 	renderTexture = 0;
@@ -76,10 +114,8 @@ int Core::Initialize(std::string title_ = "Title" , int width_ = DefaultWidth, i
 	// フレームバッファ
 	glBindTexture(GL_TEXTURE_2D, renderTexture);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 
 	glBindFramebuffer(GL_FRAMEBUFFER, frameBuffer);
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, renderTexture, 0);
@@ -184,6 +220,12 @@ void Core::Render() {
 		shaderGL[nowEffect].SetUniform("mouse", mouseBuffer.GetCursorX(), mouseBuffer.GetCursorY());
 
 		if (audioBuffer != NULL) {
+			glActiveTexture(GL_TEXTURE1);
+			glBindTexture(GL_TEXTURE_2D, optionTexture);
+			shaderGL[nowEffect].SetUniform("optTex", (int)1);
+			glActiveTexture(GL_TEXTURE0);
+
+
 			GLfloat texture[1024];
 			for (int i = 0; i < 1024; i ++) {
 				texture[i] = audioBuffer[i];
@@ -195,6 +237,8 @@ void Core::Render() {
 			glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 			glTexImage1D(GL_TEXTURE_1D, 0, 1, 1024, 0 , GL_RED, GL_FLOAT, texture);
 			shaderGL[nowEffect].SetUniform("fft", (int)0);
+			
+			
 			
 
 			int lowband = (int)floor(500.0 * 1024.0 / 44100.0 + 0.5);
