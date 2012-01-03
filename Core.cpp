@@ -89,12 +89,13 @@ int Core::Initialize(std::string title_ = "Title" , int width_ = DefaultWidth, i
 		SDL_BlitSurface(bmp, &rect, tmp, &rect);
 
 		SDL_LockSurface(tmp);
-		glActiveTexture(GL_TEXTURE1);
+		//glActiveTexture(GL_TEXTURE1);
 		glBindTexture(GL_TEXTURE_2D, optionTexture);
+		glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, bmp->w, bmp->h, 0, GL_RGBA, GL_UNSIGNED_BYTE, tmp->pixels);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-		glActiveTexture(GL_TEXTURE0);
+		//glActiveTexture(GL_TEXTURE0);
 		SDL_UnlockSurface(tmp);
 
 		SDL_FreeSurface(tmp);
@@ -182,6 +183,29 @@ int Core::ProcessSDLEvents() {
 }
 
 void Core::Render() {
+	/*
+	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glLoadIdentity();
+	
+	glEnable(GL_TEXTURE_2D);
+	glBindTexture(GL_TEXTURE_2D, optionTexture);
+
+	
+	glBegin(GL_QUADS);
+
+	glTexCoord2d(0.0, 1.0);   glVertex2d(-1,1);
+	glTexCoord2d(0.0, 0.0);   glVertex2d(-1,-1);
+	glTexCoord2d(1.0, 0.0);   glVertex2d(1,-1);
+	glTexCoord2d(1.0, 1.0);   glVertex2d(1,1);
+
+	glEnd();
+
+	glBindTexture(GL_TEXTURE_2D, 0);
+
+	SDL_GL_SwapBuffers();
+	return;*/
+
 	// レンダーターゲット切替
 	glBindFramebuffer(GL_FRAMEBUFFER, frameBuffer);
 
@@ -218,19 +242,20 @@ void Core::Render() {
 		shaderGL[nowEffect].SetUniform("resolution", (float)width, (float)height);
 		shaderGL[nowEffect].SetUniform("time", realSec);
 		shaderGL[nowEffect].SetUniform("mouse", mouseBuffer.GetCursorX(), mouseBuffer.GetCursorY());
+		
+		glEnable(GL_TEXTURE_2D);
+		glActiveTexture(GL_TEXTURE1);
+		glBindTexture(GL_TEXTURE_2D, optionTexture);
+		shaderGL[nowEffect].SetUniform("optTex", (int)1);
 
 		if (audioBuffer != NULL) {
-			glActiveTexture(GL_TEXTURE1);
-			glBindTexture(GL_TEXTURE_2D, optionTexture);
-			shaderGL[nowEffect].SetUniform("optTex", (int)1);
-			glActiveTexture(GL_TEXTURE0);
-
-
 			GLfloat texture[1024];
 			for (int i = 0; i < 1024; i ++) {
 				texture[i] = audioBuffer[i];
 			}
+			
 			glEnable(GL_TEXTURE_1D);
+			glActiveTexture(GL_TEXTURE0);
 			glBindTexture(GL_TEXTURE_1D, audioTexture);
 			glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 			glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -238,9 +263,6 @@ void Core::Render() {
 			glTexImage1D(GL_TEXTURE_1D, 0, 1, 1024, 0 , GL_RED, GL_FLOAT, texture);
 			shaderGL[nowEffect].SetUniform("fft", (int)0);
 			
-			
-			
-
 			int lowband = (int)floor(500.0 * 1024.0 / 44100.0 + 0.5);
 			int midband = (int)floor(5000.0 * 1024.0 / 44100.0 + 0.5);
 
@@ -271,6 +293,8 @@ void Core::Render() {
 		}
 		glRecti(1, 1, -1, -1);
 		shaderGL[nowEffect].Unbind();
+
+		glActiveTexture(GL_TEXTURE0);
 	}
 	
 	if (editMode) {
@@ -315,6 +339,7 @@ void Core::Render() {
 		glEnd();	
 		glPopAttrib();
 		glPopMatrix();
+
 			
 		glTranslatef(-1.0f, 1.0f + editorOffsetY,0);
 		TextEditorPtrBuffer ptrbuf = textEditor.GetVisibleText();
@@ -365,6 +390,8 @@ void Core::Render() {
 			BitmapFontGL::Instance()->DrawLine(EffectFileTable[nowEffect], aspect, width, textEditor.GetMaxLineNum(), 0.5, 0.5);	
 		else
 			BitmapFontGL::Instance()->DrawLine(EffectFileTable[nowEffect], aspect, width, textEditor.GetMaxLineNum(), 0.5, 0.5, 1.0, 0.0, 0.0);	
+
+		BitmapFontGL::Instance()->DrawLine("F1-F10: Change File  F11: Show/Hide code  F12: Edit PostFx", aspect, width, textEditor.GetMaxLineNum() + 1, 0.5, 0.5);
 		
 		EditorCursor cursor = textEditor.GetCursorPosition();
 		BitmapFontGL::Instance()->DrawCursor(cursor.col, cursor.row, aspect, width);
@@ -428,7 +455,6 @@ void Core::Render() {
 		glRecti(1, 1, -1, -1);
 		glBindTexture(GL_TEXTURE_2D, 0);
 	}
-
 	SDL_GL_SwapBuffers();
 }
 
