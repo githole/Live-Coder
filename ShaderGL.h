@@ -15,6 +15,7 @@
 #endif
 
 #include <string>
+#include <set>
 
 #include "Logger.h"
 
@@ -24,9 +25,15 @@ class ShaderGL {
 private:
 	bool OK;
 	GLuint shaderProgram;
+
+	std::set<int> errorLinesFS;
+	std::set<int> errorLinesVS;
 public:
 	ShaderGL();
 	virtual ~ShaderGL();
+
+	const std::set<int>& GetErrorLinesFS() { return errorLinesFS; }
+	const std::set<int>& GetErrorLinesVS() { return errorLinesVS; }
 
 	GLuint Compile(const std::string& fsshader);
 
