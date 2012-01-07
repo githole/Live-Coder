@@ -134,6 +134,8 @@ int Core::Initialize(std::string title_ = "Title" , int width_ = DefaultWidth, i
 	SDL_EventState(SDL_MOUSEMOTION, SDL_IGNORE);
 	SDL_EnableUNICODE(true);
 	SDL_EnableKeyRepeat(250, 25);
+
+	errorHighlight = true;
 	return 0;
 }
 
@@ -168,6 +170,10 @@ int Core::ProcessSDLEvents() {
 					editMode = false;
 				else
 					editMode = true;
+			}
+
+			if (eve.key.keysym.mod & KMOD_CTRL && eve.key.keysym.sym == SDLK_TAB) {
+				errorHighlight = !errorHighlight;
 			}
 
 			}
@@ -363,6 +369,8 @@ void Core::Render() {
 			BitmapFontGL::Instance()->ProcessComment(*textbuf[i]);
 		}
 
+		std::set<int> errorLinesFS = shaderGL[nowEffect].GetErrorLinesFS();
+
 		for (int i = 0; i < ptrbuf.size(); i ++) {
 			float up = 1.0;
 			float down = 1.0;
@@ -380,7 +388,13 @@ void Core::Render() {
 				}
 			}
 
-			BitmapFontGL::Instance()->DrawLine(ptrbuf[i]->c_str(), aspect, width, i, up, down);	
+			bool errorLine = false;
+			if (errorLinesFS.find(i + textEditor.GetLineOffset() + 1) != errorLinesFS.end())
+				errorLine = true;
+			if (errorHighlight == false)
+				errorLine = false;
+
+			BitmapFontGL::Instance()->DrawLine(ptrbuf[i]->c_str(), aspect, width, i, up, down, errorLine);	
 			if (i == textEditor.GetCursorPosition().col)
 				cy = height - i * fontHeight - fontHeight/2.0 + height * editorOffsetY/2.0;
 		}

@@ -138,7 +138,7 @@ class BitmapFontGL
 			}
 		}
 
-		void DrawLine(const char* strbuf, float aspect, float width, int line, float upAlpha, float downAlpha, float red = 1.0f, float green = 1.0f, float blue = 1.0f) {
+		void DrawLine(const char* strbuf, float aspect, float width, int line, float upAlpha, float downAlpha, bool isError = false, float red = 1.0f, float green = 1.0f, float blue = 1.0f) {
 			unsigned int ddx = 0;
 			unsigned int ddy = -fontHeight * line;
 			glPushMatrix();
@@ -230,19 +230,25 @@ class BitmapFontGL
 					float dty = 1.0f /  6.0f;
 					float r = red, g = green, b = blue;
 
-					switch (syntaxColor[strptr]) {
-					case 0:
-						break;
-					case 1:
-						r = 0.6;
-						g = 0.6;
-						b = 1.0;
-						break;
-					case 2:
-						r = 0.6;
-						g = 1.0;
-						b = 0.6;
-						break;
+					if (isError) {
+						r = 1.0;
+						g = 0.1;
+						b = 0.1;
+					} else {
+						switch (syntaxColor[strptr]) {
+						case 0:
+							break;
+						case 1:
+							r = 0.6;
+							g = 0.6;
+							b = 1.0;
+							break;
+						case 2:
+							r = 0.6;
+							g = 1.0;
+							b = 0.6;
+							break;
+						}
 					}
 					/*
 					if (syntaxColor[strptr] == 0) {

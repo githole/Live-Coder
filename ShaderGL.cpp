@@ -7,10 +7,11 @@ enum ShaderGLType {
 	GLSL_FS
 };
 	
-void getErrorLog(GLuint shader)
+void getErrorLog(GLuint shader, std::set<int>* errorLines = NULL)
 {
 	GLsizei bufSize = 0;
 	glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &bufSize);
+
 	if (bufSize > 1) {
 		GLchar *infoLog;
 		GLsizei length;
@@ -20,11 +21,46 @@ void getErrorLog(GLuint shader)
 		glGetShaderInfoLog(shader, bufSize, &length, infoLog);
 		Logger::Instance()->OutputString("Compile Status: " + std::string(infoLog));
 
+		// 適当な解析
+		if (errorLines != NULL) {
+			std::string tmpStr;
+			for (int i = 0; i <  bufSize; i ++) {
+				if (infoLog[i] == '\n') {
+					int num = 0;
+					int numcnt = 0;
+					bool inNum = false;
+					for (int j = 0; j < tmpStr.length(); j ++) {
+						if (inNum) {
+							if (isdigit(tmpStr[j])) {
+								num = num * 10 + (tmpStr[j] - '0');
+							} else {
+								inNum = false;
+								numcnt ++;
+
+								// 二番目の数字
+								if (numcnt == 2) {
+									errorLines->insert(num);
+								}
+							}
+						} else {
+							if (isdigit(tmpStr[j])) {
+								inNum = true;
+								num = num * 10 + (tmpStr[j] - '0');
+							}
+						}
+					}
+					tmpStr = "";
+				} else {
+					tmpStr += infoLog[i];
+				}
+			}
+		}
+
 		delete[] infoLog;
 	}
 }
 
-GLuint CompileShader(ShaderGLType type, const GLchar* source)
+GLuint CompileShader(ShaderGLType type, const GLchar* source, std::set<int>* errorLines = NULL)
 {
 	GLint status;
 	unsigned int prog = 0;
@@ -36,7 +72,7 @@ GLuint CompileShader(ShaderGLType type, const GLchar* source)
 			glCompileShader(prog);
 			glGetShaderiv(prog, GL_COMPILE_STATUS, &status);
 			if (status == GL_FALSE) {
-				getErrorLog(prog);
+				getErrorLog(prog, errorLines);
 				Logger::Instance()->OutputString("Compile error in vertex shader.");
 				glDeleteShader(prog);
 				prog = 0;
@@ -51,7 +87,7 @@ GLuint CompileShader(ShaderGLType type, const GLchar* source)
 			glCompileShader(prog);
 			glGetShaderiv(prog, GL_COMPILE_STATUS, &status);
 			if (status == GL_FALSE) {
-				getErrorLog(prog);
+				getErrorLog(prog, errorLines);
 				Logger::Instance()->OutputString("Compile error in fragment shader.");
 				glDeleteShader(prog);
 				prog = 0;
@@ -110,13 +146,16 @@ GLuint ShaderGL::CompileFromFile(const std::string& filename) {
 GLuint ShaderGL::Compile(const std::string& fsshader) {
 	// 頂点シェーダー（固定）
 	static const std::string vsshader = "attribute vec2 pos;void main(){gl_Position=vec4(pos.xy,0,1);}";
-	GLuint vsh = CompileShader(GLSL_VS, vsshader.c_str()); 
+
+	errorLinesVS.clear();
+	GLuint vsh = CompileShader(GLSL_VS, vsshader.c_str(), &errorLinesVS); 
 	if (vsh == 0) {
 		Logger::Instance()->OutputString("Vertex Shader Error.");
 		return 0;
 	}
 
-	GLuint fsh = CompileShader(GLSL_FS, fsshader.c_str());
+	errorLinesFS.clear();
+	GLuint fsh = CompileShader(GLSL_FS, fsshader.c_str(), &errorLinesFS);
 	if (fsh == 0) {
 		Logger::Instance()->OutputString("Fragment Shader Error.");
 		glDeleteShader(vsh);

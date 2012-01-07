@@ -45,6 +45,7 @@ private:
 
 	bool editMode;
 	bool nowCompiled;
+	bool errorHighlight;
 
 	int nowEffect;
 
