@@ -193,9 +193,9 @@ int Core::ProcessSDLEvents() {
 
 			if (SDLK_F1 <= eve.key.keysym.sym && eve.key.keysym.sym <= SDLK_F12 && eve.key.keysym.sym != SDLK_F11) {
 				nowEffect = eve.key.keysym.sym - SDLK_F1;
-				if (ctrl)
+				if (alt)
 					nowEffect += 12;
-				else if (alt)
+				else if (ctrl)
 					nowEffect += 24;
 
 				shaderGL[nowEffect].CompileFromFile(EffectFileTable[nowEffect]);
@@ -211,6 +211,11 @@ int Core::ProcessSDLEvents() {
 
 			if (eve.key.keysym.mod & KMOD_CTRL && eve.key.keysym.sym == SDLK_TAB) {
 				errorHighlight = !errorHighlight;
+			}
+			if (eve.key.keysym.mod & KMOD_CTRL && eve.key.keysym.sym == SDLK_SPACE) {
+				static bool cursor = true;
+				cursor = !cursor;
+				SDL_ShowCursor(cursor);
 			}
 
 			}
