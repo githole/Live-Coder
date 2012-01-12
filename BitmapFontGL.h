@@ -232,8 +232,8 @@ class BitmapFontGL
 
 					if (isError) {
 						r = 1.0;
-						g = 0.1;
-						b = 0.1;
+						g = 0.05;
+						b = 0.05;
 					} else {
 						switch (syntaxColor[strptr]) {
 						case 0:

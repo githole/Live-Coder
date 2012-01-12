@@ -2,8 +2,9 @@
 
 namespace LiveCoder {
 	
+const int POSTFxID = 11;
 const char* EffectFileTable[] = {
-	"scene1.glsl",
+	"scene1.glsl", // 0
 	"scene2.glsl",
 	"scene3.glsl",
 	"scene4.glsl",
@@ -12,9 +13,35 @@ const char* EffectFileTable[] = {
 	"scene7.glsl",
 	"scene8.glsl",
 	"scene9.glsl",
-	"scene10.glsl",
-	"scene11.glsl",
-	"effect.glsl",
+	"scene10.glsl", // 9
+	"non.glsl",
+	"effect.glsl", // 11
+
+	"scene11.glsl", // 12
+	"scene12.glsl", 
+	"scene13.glsl", 
+	"scene14.glsl", 
+	"scene15.glsl", 
+	"scene16.glsl", 
+	"scene17.glsl", 
+	"scene18.glsl", 
+	"scene19.glsl",
+	"scene20.glsl",
+	"non.glsl",
+	"non.glsl",
+	
+	"scene21.glsl", // 24
+	"scene22.glsl", 
+	"scene23.glsl", 
+	"scene24.glsl", 
+	"scene25.glsl", 
+	"scene26.glsl", 
+	"scene27.glsl", 
+	"scene28.glsl", 
+	"scene29.glsl",
+	"scene30.glsl",
+	"non.glsl",
+	"non.glsl",
 };
 
 // 初期化
@@ -160,11 +187,21 @@ int Core::ProcessSDLEvents() {
 				keyAnalyzer.KeyHit(&textEditor, key, eve.key.keysym.mod, EffectFileTable[nowEffect]);
 			if (eve.key.keysym.sym == SDLK_ESCAPE)
 				return -1;
+
+			int ctrl = eve.key.keysym.mod & KMOD_CTRL;
+			int alt = eve.key.keysym.mod & KMOD_ALT;
+
 			if (SDLK_F1 <= eve.key.keysym.sym && eve.key.keysym.sym <= SDLK_F12 && eve.key.keysym.sym != SDLK_F11) {
 				nowEffect = eve.key.keysym.sym - SDLK_F1;
+				if (ctrl)
+					nowEffect += 12;
+				else if (alt)
+					nowEffect += 24;
+
 				shaderGL[nowEffect].CompileFromFile(EffectFileTable[nowEffect]);
 				textEditor.Load(EffectFileTable[nowEffect]);
 			}
+
 			if (eve.key.keysym.sym == SDLK_F11) {
 				if (editMode)
 					editMode = false;
@@ -445,25 +482,25 @@ void Core::Render() {
 	
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-	if (shaderGL[EffectNum - 1].Valid()) {
-		shaderGL[EffectNum - 1].Bind();
+	if (shaderGL[POSTFxID].Valid()) {
+		shaderGL[POSTFxID].Bind();
 		
 		glBindTexture(GL_TEXTURE_2D, renderTexture);
-		shaderGL[EffectNum - 1].SetUniform("texture0", (int)0);
-		shaderGL[EffectNum - 1].SetUniform("resolution", (float)width, (float)height);
-		shaderGL[EffectNum - 1].SetUniform("time", realSec);
-		shaderGL[EffectNum - 1].SetUniform("mouse", mouseBuffer.GetCursorX(), mouseBuffer.GetCursorY());
-		shaderGL[EffectNum - 1].SetUniform("lowFreq", (float)low);
-		shaderGL[EffectNum - 1].SetUniform("midFreq", (float)mid);
-		shaderGL[EffectNum - 1].SetUniform("highFreq", (float)high);
-		shaderGL[EffectNum - 1].SetUniform("editorCursorY", (float)cy);
+		shaderGL[POSTFxID].SetUniform("texture0", (int)0);
+		shaderGL[POSTFxID].SetUniform("resolution", (float)width, (float)height);
+		shaderGL[POSTFxID].SetUniform("time", realSec);
+		shaderGL[POSTFxID].SetUniform("mouse", mouseBuffer.GetCursorX(), mouseBuffer.GetCursorY());
+		shaderGL[POSTFxID].SetUniform("lowFreq", (float)low);
+		shaderGL[POSTFxID].SetUniform("midFreq", (float)mid);
+		shaderGL[POSTFxID].SetUniform("highFreq", (float)high);
+		shaderGL[POSTFxID].SetUniform("editorCursorY", (float)cy);
 
 		//float cy = (textEditor.GetCursorPosition().col - textEditor.GetLineOffset()) * 11
 
 		glRecti(1, 1, -1, -1);
 		glBindTexture(GL_TEXTURE_2D, 0);
 
-		shaderGL[EffectNum - 1].Unbind();
+		shaderGL[POSTFxID].Unbind();
 	} else {
 		glBindTexture(GL_TEXTURE_2D, renderTexture);
 		glRecti(1, 1, -1, -1);
@@ -477,21 +514,10 @@ int Core::MainLoop() {
 	Logger::Instance()->OutputString("MainLoop...");
 
 	BitmapFontGL::Instance()->CreateTexture();
-//	shaderGL.Compile("void main() { gl_FragColor = vec4(1, 0, 1, 1); }");
 	baseTime = SDL_GetTicks();
 
-//	textEditor.SetString("uniform float time;\n\nvoid main(){\n  gl_FragColor=(1.0 - gl_FragCoord.y/540.0) * vec4(0.0,sin(length(vec2(400.0 +\n  100.0*sin(time), 300.0 + 200.0*cos(time)) - gl_FragCoord.xy)/4.0)*\n  sin(length(vec2(300.0 + 200.0*sin(time), 400.0 + 100.0*cos(time/2.0)) - gl_FragCoord.xy)/3.0),0.0,1.0);\n}");
-//	textEditor.SetString("uniform float time;\nuniform sampler1D rawAudio;\nvoid main(){vec4 col=texture1D(rawAudio, gl_FragCoord.x/960.0);\n  gl_FragColor=col;}");
-//	textEditor.Load("init.glsl");
-
-//	shaderGL[EffectNum - 1].CompileFromFile("effect.glsl");
-
-	/*
-	for (int i = 0; i < EffectNum; i ++) {
-		shaderGL[i].CompileFromFile(EffectFileTable[i]);
-	}*/
 	// テキスト用エフェクトだけは事前にコンパイルしておく
-	shaderGL[EffectNum - 1].CompileFromFile(EffectFileTable[EffectNum - 1]);
+	shaderGL[POSTFxID].CompileFromFile(EffectFileTable[POSTFxID]);
 	textEditor.Load(EffectFileTable[0]);
 	
 	glGenTextures(1 , &audioTexture);

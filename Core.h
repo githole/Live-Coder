@@ -33,7 +33,7 @@ namespace LiveCoder {
 const int DefaultWidth = 800;
 const int DefaultHeight = 600;
 
-const int EffectNum = 12;
+const int EffectNum = 64;
 
 
 class Core {
