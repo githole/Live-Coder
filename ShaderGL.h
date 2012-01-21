@@ -14,6 +14,7 @@
 #include <GL/glu.h>
 #endif
 
+#include <stdio.h>
 #include <string>
 #include <set>
 
