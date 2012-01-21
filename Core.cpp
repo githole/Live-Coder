@@ -84,14 +84,14 @@ int Core::Initialize(std::string title_ = "Title" , int width_ = DefaultWidth, i
 	Logger::Instance()->OutputString("SDL_SetVideoMode succeeded");
 
 	 
-#ifdef	__WIN32__
+#ifdef	__NEEDSGLEW__
 	// GLEW
 	if (glewInit() != GLEW_OK) {
 		Logger::Instance()->OutputString("Error: glewInit()");
 		return -1;
 	}
 	Logger::Instance()->OutputString("glewInit succeeded");
-#endif	__WIN32__
+#endif	__NEEDSGLEW__
 
 	// オプションのテクスチャ
 	glGenTextures(1, &optionTexture);
