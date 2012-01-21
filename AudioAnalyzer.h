@@ -6,8 +6,13 @@
 #include <OpenAL/al.h>
 #include <OpenAL/alc.h>
 #else
+#ifdef __linux__
+#include <AL/al.h>
+#include <AL/alc.h>
+#else
 #include <al.h>
 #include <alc.h>
+#endif
 #endif
 
 #include "Logger.h"
