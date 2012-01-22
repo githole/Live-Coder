@@ -5,6 +5,8 @@
 #include <vector>
 #include <iostream>
 #include <algorithm>
+#include <stdio.h>
+#include <string.h>
 
 namespace LiveCoder {
 

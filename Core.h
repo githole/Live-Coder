@@ -3,6 +3,14 @@
 
 #include <SDL.h>
 
+#ifdef __WIN32__
+#define __NEEDSGLEW__
+#endif __WIN32__
+
+#ifdef __linux__
+#define __NEEDSGLEW__
+#endif __linux__
+
 #ifdef	__WIN32__
 #include <windows.h>
 #endif	__WIN32__
