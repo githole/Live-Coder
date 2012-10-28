@@ -18,7 +18,7 @@ public:
 	float GetCursorX() { return cursorX; }
 	float GetCursorY() { return cursorY; }
 
-	MouseBuffer(void) : cursorX(0.0f), cursorY(0.0) {
+	MouseBuffer(void) : cursorX(0.0f), cursorY(0.0f) {
 	}
 	virtual ~MouseBuffer(void) {
 	}

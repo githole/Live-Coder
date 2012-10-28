@@ -82,7 +82,7 @@ class BitmapFontGL
 					 0.25f * 8.0f / width * aspect,
 					 0.25f * 8.0f / width);
 					glBegin(GL_QUADS);
-							glColor4f(1.0, 1.0, 1.0, 1.0);
+							glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 							glVertex2i  (ddx              , ddy       );
 							glVertex2i  (ddx + w  , ddy       );
 							glVertex2i  (ddx + w  , ddy - fontHeight  );
@@ -106,7 +106,7 @@ class BitmapFontGL
 					 0.25f * 8.0f / width * aspect,
 					 0.25f * 8.0f / width);
 					glBegin(GL_QUADS);
-							glColor4f(1.0, 1.0, 1.0, 1.0);
+							glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 							glVertex2i  (ddx              , ddy       );
 							glVertex2i  (ddx + w  , ddy       );
 							glVertex2i  (ddx + w  , ddy - fontHeight  );
@@ -226,8 +226,8 @@ class BitmapFontGL
 					unsigned int highbit = ((strbuf[strptr] - 0x20) >> 4) & 0x0F;
 					float ptx = lowbit / 16.0f;
 					float pty = 1.0f - highbit / 6.0f;
-					float dtx = 1.0f / 16.0f;
-					float dty = 1.0f /  6.0f;
+					const float dtx = 1.0f / 16.0f;
+					const float dty = 1.0f /  6.0f;
 					float r = red, g = green, b = blue;
 
 					if (isError) {

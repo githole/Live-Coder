@@ -173,7 +173,7 @@ int Core::ProcessSDLEvents() {
 	SDL_PumpEvents();
 	int mouseX, mouseY;
 	SDL_GetMouseState(&mouseX, &mouseY);
-	mouseBuffer.SetPosition((0.5 - (float)mouseX / width) * 2.0, (0.5 - (float)mouseY / height) * 2.0);
+	mouseBuffer.SetPosition((0.5f - (float)mouseX / width) * 2.0f, (0.5f - (float)mouseY / height) * 2.0f);
 
 	keyBuffer.Clear();
     while (SDL_PollEvent(&eve)) {
@@ -275,10 +275,10 @@ void Core::Render() {
 
 	float realSec = (nowTime - baseTime) / 1000.0f;
 	
-	float low = 0.0;
-	float mid = 0.0;
-	float high = 0.0;
-	float cy = -9999.0;
+	float low = 0.0f;
+	float mid = 0.0f;
+	float high = 0.0f;
+	float cy = -9999.0f;
 
 	const int fontWidth = 10;
 	const int fontHeight = 15;
@@ -352,44 +352,44 @@ void Core::Render() {
 		const float aspect = width/static_cast<float>(height);
 		const float textEditorHeight = textEditor.GetMaxLineNum() * fontHeight * (0.25f * 8.0f / width * aspect);
 		const float textEditorBGHeight = textEditorHeight * 1.2f;
-		const float editorOffsetY =  -(2.0 - textEditorHeight) / 2.0;
-		const float editorBGOffsetY =  -(2.0 - textEditorBGHeight) / 2.0;
+		const float editorOffsetY =  -(2.0f - textEditorHeight) / 2.0f;
+		const float editorBGOffsetY =  -(2.0f - textEditorBGHeight) / 2.0f;
 		glPushMatrix();
-		glTranslatef(-1.0f, 1.0f + editorBGOffsetY, 0);
+		glTranslatef(-1.0f, 1.0f + editorBGOffsetY, 0.f);
 		glPushAttrib(GL_ENABLE_BIT);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 			
 		glEnable(GL_BLEND);
 		glDisable(GL_DEPTH_TEST);
 		glBegin(GL_QUADS);
-			glColor4f(0.0, 0.0, 0.0, 0.0);
-			glVertex2f(0.0, 0.0);
-			glVertex2f(0.0 + width, 0.0);
-			glColor4f(0.0, 0.0, 0.0, 0.8);
-			glVertex2f(0.0 + width, -textEditorBGHeight/5.0);
-			glVertex2f(0.0, -textEditorBGHeight/5.0);
+			glColor4f(0.0f, 0.0f, 0.0f, 0.0f);
+			glVertex2f(0.0f, 0.0f);
+			glVertex2f(0.0f + width, 0.0f);
+			glColor4f(0.0f, 0.0f, 0.0f, 0.8f);
+			glVertex2f(0.0f + width, -textEditorBGHeight/5.0f);
+			glVertex2f(0.0f, -textEditorBGHeight/5.0f);
 		glEnd();	
 		glBegin(GL_QUADS);
-			glColor4f(0.0, 0.0, 0.0, 0.8);
-			glVertex2f(0.0, -textEditorBGHeight/5.0);
-			glVertex2f(0.0 + width, - textEditorBGHeight/5.0);
-			glColor4f(0.0, 0.0, 0.0, 0.8);
-			glVertex2f(0.0 + width,  -4.0*textEditorBGHeight/5.0 );
-			glVertex2f(0.0,  -4.0*textEditorBGHeight/5.0  );
+			glColor4f(0.0f, 0.0f, 0.0f, 0.8f);
+			glVertex2f(0.0f, -textEditorBGHeight/5.0f);
+			glVertex2f(0.0f + width, - textEditorBGHeight/5.0f);
+			glColor4f(0.0f, 0.0f, 0.0f, 0.8f);
+			glVertex2f(0.0f + width,  -4.0f*textEditorBGHeight/5.0f );
+			glVertex2f(0.0f,  -4.0f*textEditorBGHeight/5.0f  );
 		glEnd();	
 		glBegin(GL_QUADS);
-			glColor4f(0.0, 0.0, 0.0, 0.8);
-			glVertex2f(0.0,-4.0*textEditorBGHeight/5.0);
-			glVertex2f(0.0 + width  ,  -4.0*textEditorBGHeight/5.0);
-			glColor4f(0.0, 0.0, 0.0, 0.0);
-			glVertex2f(0.0 + width,  -textEditorBGHeight);
-			glVertex2f(0.0, - textEditorBGHeight);
+			glColor4f(0.0f, 0.0f, 0.0f, 0.8f);
+			glVertex2f(0.0f,-4.0f*textEditorBGHeight/5.0f);
+			glVertex2f(0.0f + width  ,  -4.0f*textEditorBGHeight/5.0f);
+			glColor4f(0.0f, 0.0f, 0.0f, 0.0f);
+			glVertex2f(0.0f + width,  -textEditorBGHeight);
+			glVertex2f(0.0f, - textEditorBGHeight);
 		glEnd();	
 		glPopAttrib();
 		glPopMatrix();
 
 			
-		glTranslatef(-1.0f, 1.0f + editorOffsetY,0);
+		glTranslatef(-1.0f, 1.0f + editorOffsetY,0.f);
 		TextEditorPtrBuffer ptrbuf = textEditor.GetVisibleText();
 		TextEditorPtrBuffer textbuf = textEditor.GetText();
 
@@ -414,8 +414,8 @@ void Core::Render() {
 		std::set<int> errorLinesFS = shaderGL[nowEffect].GetErrorLinesFS();
 
 		for (int i = 0; i < ptrbuf.size(); i ++) {
-			float up = 1.0;
-			float down = 1.0;
+			float up = 1.0f;
+			float down = 1.0f;
 
 			if (upAlpha) {
 				if (i < transRange) {
@@ -425,8 +425,8 @@ void Core::Render() {
 			}
 			if (downAlpha) {
 				if (i >= ptrbuf.size() - transRange) {
-					up = 1.0 - (float)(i - ptrbuf.size() + transRange)/transRange;
-					down = 1.0 - (float)(i + 1 - ptrbuf.size() + transRange)/transRange;
+					up = 1.0f - (float)(i - ptrbuf.size() + transRange)/transRange;
+					down = 1.0f - (float)(i + 1 - ptrbuf.size() + transRange)/transRange;
 				}
 			}
 
@@ -438,16 +438,16 @@ void Core::Render() {
 
 			BitmapFontGL::Instance()->DrawLine(ptrbuf[i]->c_str(), aspect, width, i, up, down, errorLine);	
 			if (i == textEditor.GetCursorPosition().col)
-				cy = height - i * fontHeight - fontHeight/2.0 + height * editorOffsetY/2.0;
+				cy = height - i * fontHeight - fontHeight/2.0f + height * editorOffsetY/2.0f;
 		}
 		
 
 		if (nowCompiled)
-			BitmapFontGL::Instance()->DrawLine(EffectFileTable[nowEffect], aspect, width, textEditor.GetMaxLineNum(), 0.5, 0.5);	
+			BitmapFontGL::Instance()->DrawLine(EffectFileTable[nowEffect], aspect, width, textEditor.GetMaxLineNum(), 0.5f, 0.5f);	
 		else
-			BitmapFontGL::Instance()->DrawLine(EffectFileTable[nowEffect], aspect, width, textEditor.GetMaxLineNum(), 0.5, 0.5, 1.0, 0.0, 0.0);	
+			BitmapFontGL::Instance()->DrawLine(EffectFileTable[nowEffect], aspect, width, textEditor.GetMaxLineNum(), 0.5f, 0.5f, 1.0f, 0.0f, 0.0f);	
 
-		BitmapFontGL::Instance()->DrawLine("F1-F10: Change File  F11: Show/Hide code  F12: Edit PostFx", aspect, width, textEditor.GetMaxLineNum() + 1, 0.5, 0.5);
+		BitmapFontGL::Instance()->DrawLine("F1-F10: Change File  F11: Show/Hide code  F12: Edit PostFx", aspect, width, textEditor.GetMaxLineNum() + 1, 0.5f, 0.5f);
 		
 		EditorCursor cursor = textEditor.GetCursorPosition();
 		BitmapFontGL::Instance()->DrawCursor(cursor.col, cursor.row, aspect, width);
@@ -462,7 +462,7 @@ void Core::Render() {
 				int end = cursor.row;
 
 
-				BitmapFontGL::Instance()->DrawSelect(aspect, width, selectStart.col, start, end, 0.5, 0.5, 0.5);
+				BitmapFontGL::Instance()->DrawSelect(aspect, width, selectStart.col, start, end, 0.5f, 0.5f, 0.5f);
 			} else {
 				for (int i = selectStart.col; i <= cursor.col; i ++) {
 					if (i < 0 || i >= textEditor.GetMaxLineNum())
