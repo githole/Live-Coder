@@ -10,8 +10,12 @@ void fft(int n, float theta, float ar[], float ai[])
 
     for (m = n; (mh = m >> 1) >= 1; m = mh) {
         for (i = 0; i < mh; i++) {
-            wr = cos(theta * i);
-            wi = sin(theta * i);
+#ifdef _GNU_SOURCE
+            sincosf(theta * i, &wi, &wr);
+#else
+            wr = cosf(theta * i);
+            wi = sinf(theta * i);
+#endif
             for (j = i; j < n; j += m) {
                 k = j + mh;
                 xr = ar[j] - ar[k];
@@ -84,9 +88,9 @@ float* AudioAnalyzer::Capture() {
 		// Grab the sound
 		alcCaptureSamples(inputDevice, capturedBuffer, captureSize);
 
-		const float theta = 2.0 * (3.1415926535898f) / captureSize;
+		const float theta = 2.0f * (3.1415926535898f) / captureSize;
 		for (int i = 0; i < captureSize; i ++) {
-			ar[i] = capturedBuffer[i] / 32768.0;
+			ar[i] = capturedBuffer[i] / 32768.0f;
 			//		  ar[i] = 0.54 - 0.46 * cos(2.0 * (3.1415926535898f) * (float)capturedBuffer[i] / 32768.0);
 			ai[i] = 0.0f;
 
@@ -94,7 +98,7 @@ float* AudioAnalyzer::Capture() {
 		fft(captureSize, theta , ar, ai);
 
 		for (int i = 0; i < captureSize; i ++) { 
-			ffted[i] = 4.0 * sqrt(ar[i]*ar[i] + ai[i]*ai[i]) / captureSize;
+			ffted[i] = 4.0f * sqrtf(ar[i]*ar[i] + ai[i]*ai[i]) / captureSize;
 		}
 		return ffted;
 	}
