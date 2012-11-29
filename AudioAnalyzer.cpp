@@ -10,12 +10,9 @@ void fft(int n, float theta, float ar[], float ai[])
 
     for (m = n; (mh = m >> 1) >= 1; m = mh) {
         for (i = 0; i < mh; i++) {
-#ifdef _GNU_SOURCE
-            sincosf(theta * i, &wi, &wr);
-#else
             wr = cosf(theta * i);
             wi = sinf(theta * i);
-#endif
+            
             for (j = i; j < n; j += m) {
                 k = j + mh;
                 xr = ar[j] - ar[k];
