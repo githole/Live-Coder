@@ -145,7 +145,7 @@ int Core::Initialize(std::string title_ = "Title" , int width_ = DefaultWidth, i
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	
+
 	// Initialize frame buffer
 	glBindTexture(GL_TEXTURE_2D, renderTexture);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
@@ -283,6 +283,7 @@ void Core::Render() {
 		glActiveTexture(GL_TEXTURE2);
 		glBindTexture(GL_TEXTURE_2D, backTexture);
 		shaderGL[nowEffect].SetUniform("backbuffer", (int)2);
+		
 
 		// Calculate low, mid, high freq.
 		if (audioBuffer != NULL) {
@@ -324,6 +325,12 @@ void Core::Render() {
 		}
 		glRecti(1, 1, -1, -1);
 		shaderGL[nowEffect].Unbind();
+
+		glActiveTexture(GL_TEXTURE1);
+		glBindTexture(GL_TEXTURE_2D, 0);
+		
+		glActiveTexture(GL_TEXTURE2);
+		glBindTexture(GL_TEXTURE_2D, 0);
 
 		glActiveTexture(GL_TEXTURE0);
 	}
@@ -389,7 +396,7 @@ void Core::Render() {
 		if (textEditor.GetLineOffset() == 0) {
 			upAlpha = false;
 		}
-
+		 
 		if (textEditor.GetLineOffset() + textEditor.GetMaxLineNum() >= textEditor.GetLineNum()) {
 			downAlpha = false;
 		}
