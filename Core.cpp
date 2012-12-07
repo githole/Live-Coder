@@ -67,7 +67,6 @@ int Core::Initialize(std::string title_ = "Title" , int width_ = DefaultWidth, i
 	
     bpp = info->vfmt->BitsPerPixel;
 	
-	// 適当です
     SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 5);
     SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 5);
     SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 5);
@@ -93,7 +92,7 @@ int Core::Initialize(std::string title_ = "Title" , int width_ = DefaultWidth, i
 	Logger::Instance()->OutputString("glewInit succeeded");
 #endif	__NEEDSGLEW__
 
-	// オプションのテクスチャ
+	// Option texture
 	glGenTextures(1, &optionTexture);
 	SDL_Surface* bmp = SDL_LoadBMP("option.bmp");
 	if (bmp != NULL) {
@@ -131,15 +130,23 @@ int Core::Initialize(std::string title_ = "Title" , int width_ = DefaultWidth, i
 		Logger::Instance()->OutputString("Error: SDL_LoadBMP");
 	}
 
-
 	frameBuffer = 0;
 	renderBuffer = 0;
 	renderTexture = 0;
+	backTexture = 0;
 
 	glGenFramebuffers(1, &frameBuffer);
 	glGenRenderbuffers(1, &renderBuffer);
 	glGenTextures(1, &renderTexture);
-	// フレームバッファ
+	glGenTextures(1, &backTexture);
+
+	// Initialize back buffer
+	glBindTexture(GL_TEXTURE_2D, backTexture);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	
+	// Initialize frame buffer
 	glBindTexture(GL_TEXTURE_2D, renderTexture);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -148,12 +155,12 @@ int Core::Initialize(std::string title_ = "Title" , int width_ = DefaultWidth, i
 	glBindFramebuffer(GL_FRAMEBUFFER, frameBuffer);
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, renderTexture, 0);
 	
-	// レンダーバッファ
+	// Initialize render buffer
 	glBindRenderbuffer(GL_RENDERBUFFER, renderBuffer);
 	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, width, height);
 	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, renderBuffer);
 
-	//
+	// Initialize render texture
 	glBindTexture(GL_TEXTURE_2D, 0);
 	glBindRenderbuffer(GL_RENDERBUFFER, 0);
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -169,11 +176,11 @@ int Core::Initialize(std::string title_ = "Title" , int width_ = DefaultWidth, i
 int Core::ProcessSDLEvents() {
     SDL_Event eve;
 
-	// まずマウス関係のイベントを処理する（なぜかPollEventでこない）
+	// Process mouse events
 	SDL_PumpEvents();
 	int mouseX, mouseY;
 	SDL_GetMouseState(&mouseX, &mouseY);
-	mouseBuffer.SetPosition((0.5f - (float)mouseX / width) * 2.0f, (0.5f - (float)mouseY / height) * 2.0f);
+	mouseBuffer.SetPosition(((float)mouseX / width), 1.0f - (float)mouseY / height);
 
 	keyBuffer.Clear();
     while (SDL_PollEvent(&eve)) {
@@ -231,30 +238,7 @@ int Core::ProcessSDLEvents() {
 }
 
 void Core::Render() {
-	/*
-	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	glLoadIdentity();
-	
-	glEnable(GL_TEXTURE_2D);
-	glBindTexture(GL_TEXTURE_2D, optionTexture);
-
-	
-	glBegin(GL_QUADS);
-
-	glTexCoord2d(0.0, 1.0);   glVertex2d(-1,1);
-	glTexCoord2d(0.0, 0.0);   glVertex2d(-1,-1);
-	glTexCoord2d(1.0, 0.0);   glVertex2d(1,-1);
-	glTexCoord2d(1.0, 1.0);   glVertex2d(1,1);
-
-	glEnd();
-
-	glBindTexture(GL_TEXTURE_2D, 0);
-
-	SDL_GL_SwapBuffers();
-	return;*/
-
-	// レンダーターゲット切替
+	// Swap render target
 	glBindFramebuffer(GL_FRAMEBUFFER, frameBuffer);
 
 	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
@@ -284,18 +268,23 @@ void Core::Render() {
 	const int fontHeight = 15;
 	BitmapFontGL::Instance()->SetFontSize(fontWidth, fontHeight);
 
-
 	if (shaderGL[nowEffect].Valid()) {
 		shaderGL[nowEffect].Bind();
 		shaderGL[nowEffect].SetUniform("resolution", (float)width, (float)height);
 		shaderGL[nowEffect].SetUniform("time", realSec);
 		shaderGL[nowEffect].SetUniform("mouse", mouseBuffer.GetCursorX(), mouseBuffer.GetCursorY());
 		
-		glEnable(GL_TEXTURE_2D);
+		glEnable(GL_TEXTURE_2D); 
 		glActiveTexture(GL_TEXTURE1);
 		glBindTexture(GL_TEXTURE_2D, optionTexture);
 		shaderGL[nowEffect].SetUniform("optTex", (int)1);
+		
+		glEnable(GL_TEXTURE_2D);
+		glActiveTexture(GL_TEXTURE2);
+		glBindTexture(GL_TEXTURE_2D, backTexture);
+		shaderGL[nowEffect].SetUniform("backbuffer", (int)2);
 
+		// Calculate low, mid, high freq.
 		if (audioBuffer != NULL) {
 			GLfloat texture[1024];
 			for (int i = 0; i < 1024; i ++) {
@@ -332,18 +321,17 @@ void Core::Render() {
 			shaderGL[nowEffect].SetUniform("lowFreq", (float)low);
 			shaderGL[nowEffect].SetUniform("midFreq", (float)mid);
 			shaderGL[nowEffect].SetUniform("highFreq", (float)high);
-
-			/*
-			float buf[1024];
-			for (int i = 0; i < 1024; i ++)
-				buf[i] = (float)audioBuffer[i];
-			shaderGL.SetUniform("audio", buf, 1024);*/
 		}
 		glRecti(1, 1, -1, -1);
 		shaderGL[nowEffect].Unbind();
 
 		glActiveTexture(GL_TEXTURE0);
 	}
+
+	// Copy render texture to back buffer texture
+	glBindTexture(GL_TEXTURE_2D, backTexture);
+	glCopyTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 0, 0, width, height, 0);
+	glBindTexture(GL_TEXTURE_2D, 0);
 	
 	if (editMode) {
 		//keyAnalyzer.Input(&textEditor, EffectFileTable[nowEffect]);
@@ -359,6 +347,7 @@ void Core::Render() {
 		glPushAttrib(GL_ENABLE_BIT);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 			
+		// render editor background
 		glEnable(GL_BLEND);
 		glDisable(GL_DEPTH_TEST);
 		glBegin(GL_QUADS);
@@ -389,6 +378,7 @@ void Core::Render() {
 		glPopMatrix();
 
 			
+		// render editor
 		glTranslatef(-1.0f, 1.0f + editorOffsetY,0.f);
 		TextEditorPtrBuffer ptrbuf = textEditor.GetVisibleText();
 		TextEditorPtrBuffer textbuf = textEditor.GetText();
@@ -396,7 +386,6 @@ void Core::Render() {
 		bool upAlpha = true;
 		bool downAlpha = true;
 	
-
 		if (textEditor.GetLineOffset() == 0) {
 			upAlpha = false;
 		}
@@ -449,6 +438,7 @@ void Core::Render() {
 
 		BitmapFontGL::Instance()->DrawLine("F1-F10: Change File  F11: Show/Hide code  F12: Edit PostFx", aspect, width, textEditor.GetMaxLineNum() + 1, 0.5f, 0.5f);
 		
+		// render editor cursor
 		EditorCursor cursor = textEditor.GetCursorPosition();
 		BitmapFontGL::Instance()->DrawCursor(cursor.col, cursor.row, aspect, width);
 
@@ -483,7 +473,6 @@ void Core::Render() {
 		glPopMatrix();
 	}
 
-	// レンダーターゲット元に戻す
 	
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
@@ -521,7 +510,7 @@ int Core::MainLoop() {
 	BitmapFontGL::Instance()->CreateTexture();
 	baseTime = SDL_GetTicks();
 
-	// テキスト用エフェクトだけは事前にコンパイルしておく
+	// precompile the effect for editor
 	shaderGL[POSTFxID].CompileFromFile(EffectFileTable[POSTFxID]);
 	textEditor.Load(EffectFileTable[0]);
 	
@@ -554,6 +543,8 @@ Core::~Core() {
 		glDeleteRenderbuffers(1, &renderBuffer);
 	if (renderTexture != 0)
 		glDeleteTextures(1, &renderTexture);
+	if (backTexture != 0)
+		glDeleteTextures(1, &backTexture);
 }
 
 };

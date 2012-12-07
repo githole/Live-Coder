@@ -29,6 +29,7 @@ vec2 resolution
 float time
 vec2 mouse
 sampler2D optTex (load from option.bmp)
+sampler2D backbuffer (can access previous frame result)
 sampler1D fft
 float lowFreq
 float midFreq

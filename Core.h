@@ -76,12 +76,14 @@ private:
 	float* audioBuffer;
 	GLuint audioTexture;
 
-	// FBO‚Æ‚©
+	// FBO
 	GLuint frameBuffer;
 	GLuint renderBuffer;
 	GLuint renderTexture;
 
-	// ©•ª‚ÅD‚«‚È‚Ä‚­‚·‚¿‚á‚ğg‚¦‚é‚Æ‚¤‚ê‚µ‚¢‚Ë
+	GLuint backTexture;
+
+	// option texture
 	GLuint optionTexture;
 public:
 

@@ -5,16 +5,8 @@
 int main(int argc, char** argv) {
 	LiveCoder::Core core;
 	int flags = SDL_OPENGL;
-	
-	/*
-	int width = 160 * 7;
-	int height = 90 * 7;*/
-	
 	int width = 1280;
 	int height = 720;
-	/*
-	int width = 1920/4;
-	int height = 1080/4;*/
 
 	if (argc >= 2) {
 	  if (strcmp(argv[1], "-f") == 0) {
