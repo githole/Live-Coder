@@ -4,44 +4,44 @@ namespace LiveCoder {
 	
 const int POSTFxID = 11;
 const char* EffectFileTable[] = {
-	"scene1.glsl", // 0
-	"scene2.glsl",
-	"scene3.glsl",
-	"scene4.glsl",
-	"scene5.glsl",
-	"scene6.glsl",
-	"scene7.glsl",
-	"scene8.glsl",
-	"scene9.glsl",
-	"scene10.glsl", // 9
-	"non.glsl",
-	"effect.glsl", // 11
+	"scene1.fx", // 0
+	"scene2.fx",
+	"scene3.fx",
+	"scene4.fx",
+	"scene5.fx",
+	"scene6.fx",
+	"scene7.fx",
+	"scene8.fx",
+	"scene9.fx",
+	"scene10.fx", // 9
+	"non.fx",
+	"effect.fx", // 11
 
-	"scene11.glsl", // 12
-	"scene12.glsl", 
-	"scene13.glsl", 
-	"scene14.glsl", 
-	"scene15.glsl", 
-	"scene16.glsl", 
-	"scene17.glsl", 
-	"scene18.glsl", 
-	"scene19.glsl",
-	"scene20.glsl",
-	"non.glsl",
-	"non.glsl",
+	"scene11.fx", // 12
+	"scene12.fx", 
+	"scene13.fx", 
+	"scene14.fx", 
+	"scene15.fx", 
+	"scene16.fx", 
+	"scene17.fx", 
+	"scene18.fx", 
+	"scene19.fx",
+	"scene20.fx",
+	"non.fx",
+	"non.fx",
 	
-	"scene21.glsl", // 24
-	"scene22.glsl", 
-	"scene23.glsl", 
-	"scene24.glsl", 
-	"scene25.glsl", 
-	"scene26.glsl", 
-	"scene27.glsl", 
-	"scene28.glsl", 
-	"scene29.glsl",
-	"scene30.glsl",
-	"non.glsl",
-	"non.glsl",
+	"scene21.fx", // 24
+	"scene22.fx", 
+	"scene23.fx", 
+	"scene24.fx", 
+	"scene25.fx", 
+	"scene26.fx", 
+	"scene27.fx", 
+	"scene28.fx", 
+	"scene29.fx",
+	"scene30.fx",
+	"non.fx",
+	"non.fx",
 };
 
 // 初期化
@@ -81,8 +81,23 @@ int Core::Initialize(std::string title_ = "Title" , int width_ = DefaultWidth, i
 		return -1;
     }
 	Logger::Instance()->OutputString("SDL_SetVideoMode succeeded");
+	
+	// Get Window Handle
+	SDL_SysWMinfo wm_info;
+	SDL_VERSION(&wm_info.version);
+	SDL_GetWMInfo(&wm_info);
+	
+	if (dxcore.InitializeDX(width, height, wm_info.window)) {
+		Logger::Instance()->OutputString("Error: DXCore InitializeDX");
+		return -1;
+	}
 
-	 
+	dxcore.Load();
+	BitmapFontDX::Instance()->Load(&dxcore);
+	for (int i = 0; i < EffectNum; i ++)
+		shaderDX[i].Load(&dxcore);
+
+	 /*
 #ifdef	__NEEDSGLEW__
 	// GLEW
 	if (glewInit() != GLEW_OK) {
@@ -91,6 +106,7 @@ int Core::Initialize(std::string title_ = "Title" , int width_ = DefaultWidth, i
 	}
 	Logger::Instance()->OutputString("glewInit succeeded");
 #endif	__NEEDSGLEW__
+	*/
 
 	// Option texture
 	glGenTextures(1, &optionTexture);
@@ -115,6 +131,24 @@ int Core::Initialize(std::string title_ = "Title" , int width_ = DefaultWidth, i
 		SDL_BlitSurface(bmp, &rect, tmp, &rect);
 
 		SDL_LockSurface(tmp);
+
+		/*
+		d3ddevice->CreateTexture(bmp->w, bmp->h, 1, 0,  D3DFMT_A32B32G32R32F, D3DPOOL_MANAGED, &optionTextureDx, 0);
+
+		D3DLOCKED_RECT locked_rect;
+		optionTextureDx->LockRect(0, &locked_rect, NULL, D3DLOCK_DISCARD);
+		const int stride = 1; 
+		const int rowPitch = locked_rect.Pitch;
+		unsigned char* pixels = (unsigned char*)locked_rect.pBits;
+		for (int y = 0; y < bmp->h; ++y) {
+			for (int x = 0; x < bmp->w; ++x) {
+				pixels[x + rowPitch * y] = ((unsigned char*)tmp->pixels)[x + bmp->w * y];
+			}
+		}
+		optionTextureDx->UnlockRect(0);
+		*/
+
+		/*
 		//glActiveTexture(GL_TEXTURE1);
 		glBindTexture(GL_TEXTURE_2D, optionTexture);
 		glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
@@ -122,6 +156,8 @@ int Core::Initialize(std::string title_ = "Title" , int width_ = DefaultWidth, i
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 		//glActiveTexture(GL_TEXTURE0);
+		*/
+
 		SDL_UnlockSurface(tmp);
 
 		SDL_FreeSurface(tmp);
@@ -130,6 +166,7 @@ int Core::Initialize(std::string title_ = "Title" , int width_ = DefaultWidth, i
 		Logger::Instance()->OutputString("Error: SDL_LoadBMP");
 	}
 
+	/*
 	frameBuffer = 0;
 	renderBuffer = 0;
 	renderTexture = 0;
@@ -168,6 +205,9 @@ int Core::Initialize(std::string title_ = "Title" , int width_ = DefaultWidth, i
 	glBindTexture(GL_TEXTURE_2D, 0);
 	glBindRenderbuffer(GL_RENDERBUFFER, 0);
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	*/
+
+
 
 	SDL_EventState(SDL_MOUSEMOTION, SDL_IGNORE);
 	SDL_EnableUNICODE(true);
@@ -209,7 +249,7 @@ int Core::ProcessSDLEvents() {
 				else if (ctrl)
 					nowEffect += 24;
 
-				shaderGL[nowEffect].CompileFromFile(EffectFileTable[nowEffect]);
+				shaderDX[nowEffect].CompileFromFile(EffectFileTable[nowEffect]);
 				textEditor.Load(EffectFileTable[nowEffect]);
 			}
 
@@ -241,19 +281,16 @@ int Core::ProcessSDLEvents() {
 	return 0;
 }
 
-void Core::Render() {
-	// Swap render target
-	glBindFramebuffer(GL_FRAMEBUFFER, frameBuffer);
-
-	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	glLoadIdentity();
-
+void Core::RenderEditorAndScene() {
+	dxcore.Device()->SetRenderTarget(0, dxcore.RenderSurface());
+	dxcore.Device()->Clear( 0, NULL, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER | D3DCLEAR_STENCIL, 0x00000000, 1.0f, 0);
+	
+	// シェーダーコンパイル
 	std::string str = textEditor.ToString();
 	if (nowSource != str) {
 		nowSource = str;
 
-		if (shaderGL[nowEffect].Compile(nowSource) != 0)
+		if (shaderDX[nowEffect].Compile(nowSource) != 0)
 			nowCompiled = true;
 		else
 			nowCompiled = false;
@@ -268,43 +305,13 @@ void Core::Render() {
 	float high = 0.0f;
 	float cy = -9999.0f;
 
-	const int fontWidth = 10;
-	const int fontHeight = 15;
-	BitmapFontGL::Instance()->SetFontSize(fontWidth, fontHeight);
-
-	if (shaderGL[nowEffect].Valid()) {
-		shaderGL[nowEffect].Bind();
-		shaderGL[nowEffect].SetUniform("resolution", (float)width, (float)height);
-		shaderGL[nowEffect].SetUniform("time", realSec);
-		shaderGL[nowEffect].SetUniform("mouse", mouseBuffer.GetCursorX(), mouseBuffer.GetCursorY());
+	if (shaderDX[nowEffect].Valid()) {
+		shaderDX[nowEffect].Bind();
+		shaderDX[nowEffect].SetUniform(0, D3DXVECTOR4(width, height, 0.0f, 0.0f));
+		shaderDX[nowEffect].SetUniform(1, D3DXVECTOR4(realSec, 0.0f, 0.0f, 0.0f));
+		shaderDX[nowEffect].SetUniform(2, D3DXVECTOR4(mouseBuffer.GetCursorX(), mouseBuffer.GetCursorY(), 0.0f, 0.0f));
 		
-		glEnable(GL_TEXTURE_2D); 
-		glActiveTexture(GL_TEXTURE1);
-		glBindTexture(GL_TEXTURE_2D, optionTexture);
-		shaderGL[nowEffect].SetUniform("optTex", (int)1);
-		
-		glEnable(GL_TEXTURE_2D);
-		glActiveTexture(GL_TEXTURE2);
-		glBindTexture(GL_TEXTURE_2D, backTexture);
-		shaderGL[nowEffect].SetUniform("backbuffer", (int)2);
-		
-
-		// Calculate low, mid, high freq.
 		if (audioBuffer != NULL) {
-			GLfloat texture[1024];
-			for (int i = 0; i < 1024; i ++) {
-				texture[i] = audioBuffer[i];
-			}
-			
-			glEnable(GL_TEXTURE_1D);
-			glActiveTexture(GL_TEXTURE0);
-			glBindTexture(GL_TEXTURE_1D, audioTexture);
-			glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-			glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-			glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-			glTexImage1D(GL_TEXTURE_1D, 0, 1, 1024, 0 , GL_RED, GL_FLOAT, texture);
-			shaderGL[nowEffect].SetUniform("fft", (int)0);
-			
 			int lowband = (int)floor(500.0 * 1024.0 / 44100.0 + 0.5);
 			int midband = (int)floor(5000.0 * 1024.0 / 44100.0 + 0.5);
 
@@ -323,74 +330,81 @@ void Core::Render() {
 			mid /= (midband - lowband);
 			high /= (1024 - midband);
 
-			shaderGL[nowEffect].SetUniform("lowFreq", (float)low);
-			shaderGL[nowEffect].SetUniform("midFreq", (float)mid);
-			shaderGL[nowEffect].SetUniform("highFreq", (float)high);
+			shaderDX[nowEffect].SetUniform(3, D3DXVECTOR4((float)low, 0.0f, 0.0f, 0.0f));
+			shaderDX[nowEffect].SetUniform(4, D3DXVECTOR4((float)mid, 0.0f, 0.0f, 0.0f));
+			shaderDX[nowEffect].SetUniform(5, D3DXVECTOR4((float)high, 0.0f, 0.0f, 0.0f));
 		}
-		glRecti(1, 1, -1, -1);
-		shaderGL[nowEffect].Unbind();
 
-		glActiveTexture(GL_TEXTURE1);
-		glBindTexture(GL_TEXTURE_2D, 0);
-		
-		glActiveTexture(GL_TEXTURE2);
-		glBindTexture(GL_TEXTURE_2D, 0);
+		// render shader
+		dxcore.Device()->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
+		struct VERTEX{
+			float x,y,z,w;
+		};
 
-		glActiveTexture(GL_TEXTURE0);
+		const VERTEX vertex1[] = {
+			{0.0f , 0.0f, 0.0f, 1.0f},
+			{width, 0.0f, 0.0f, 1.0f},
+			{width, height, 0.0f, 1.0f},
+			{0.0f , height, 0.0f, 1.0f},
+		};
+
+		dxcore.Device()->SetFVF(D3DFVF_XYZRHW);
+		dxcore.Device()->DrawPrimitiveUP(D3DPT_TRIANGLEFAN, 2, vertex1, sizeof(VERTEX));
+
+		shaderDX[nowEffect].Unbind();
 	}
 
-	// Copy render texture to back buffer texture
-	glBindTexture(GL_TEXTURE_2D, backTexture);
-	glCopyTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 0, 0, width, height, 0);
-	glBindTexture(GL_TEXTURE_2D, 0);
+	const int fontWidth = 10;
+	const int fontHeight = 15;
+	BitmapFontDX::Instance()->SetFontSize(fontWidth, fontHeight);
 	
 	if (editMode) {
 		//keyAnalyzer.Input(&textEditor, EffectFileTable[nowEffect]);
-		glPushMatrix();
 		// TextEditor Background
 		const float aspect = width/static_cast<float>(height);
-		const float textEditorHeight = textEditor.GetMaxLineNum() * fontHeight * (0.25f * 8.0f / width * aspect);
+		const float textEditorHeight = textEditor.GetMaxLineNum() * fontHeight;
 		const float textEditorBGHeight = textEditorHeight * 1.2f;
-		const float editorOffsetY =  -(2.0f - textEditorHeight) / 2.0f;
-		const float editorBGOffsetY =  -(2.0f - textEditorBGHeight) / 2.0f;
-		glPushMatrix();
-		glTranslatef(-1.0f, 1.0f + editorBGOffsetY, 0.f);
-		glPushAttrib(GL_ENABLE_BIT);
-		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-			
+		const float editorOffsetY = (height - textEditorHeight) / 2.0f;
+		const float editorBGOffsetY =  (height - textEditorBGHeight) / 2.0f;
+		
 		// render editor background
-		glEnable(GL_BLEND);
-		glDisable(GL_DEPTH_TEST);
-		glBegin(GL_QUADS);
-			glColor4f(0.0f, 0.0f, 0.0f, 0.0f);
-			glVertex2f(0.0f, 0.0f);
-			glVertex2f(0.0f + width, 0.0f);
-			glColor4f(0.0f, 0.0f, 0.0f, 0.8f);
-			glVertex2f(0.0f + width, -textEditorBGHeight/5.0f);
-			glVertex2f(0.0f, -textEditorBGHeight/5.0f);
-		glEnd();	
-		glBegin(GL_QUADS);
-			glColor4f(0.0f, 0.0f, 0.0f, 0.8f);
-			glVertex2f(0.0f, -textEditorBGHeight/5.0f);
-			glVertex2f(0.0f + width, - textEditorBGHeight/5.0f);
-			glColor4f(0.0f, 0.0f, 0.0f, 0.8f);
-			glVertex2f(0.0f + width,  -4.0f*textEditorBGHeight/5.0f );
-			glVertex2f(0.0f,  -4.0f*textEditorBGHeight/5.0f  );
-		glEnd();	
-		glBegin(GL_QUADS);
-			glColor4f(0.0f, 0.0f, 0.0f, 0.8f);
-			glVertex2f(0.0f,-4.0f*textEditorBGHeight/5.0f);
-			glVertex2f(0.0f + width  ,  -4.0f*textEditorBGHeight/5.0f);
-			glColor4f(0.0f, 0.0f, 0.0f, 0.0f);
-			glVertex2f(0.0f + width,  -textEditorBGHeight);
-			glVertex2f(0.0f, - textEditorBGHeight);
-		glEnd();	
-		glPopAttrib();
-		glPopMatrix();
+		dxcore.Device()->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
+		dxcore.Device()->SetRenderState(D3DRS_BLENDOP, D3DBLENDOP_ADD);
+		dxcore.Device()->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA);
+		dxcore.Device()->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA);
 
-			
+		struct VERTEX{
+			float x,y,z,w;
+			D3DCOLOR color;
+		};
+
+		const VERTEX vertex1[] = {
+			{0.0f , editorBGOffsetY, 0.0f, 1.0f, 0x00000000},
+			{width, editorBGOffsetY, 0.0f, 1.0f, 0x00000000},
+			{width, editorBGOffsetY + textEditorBGHeight/5.0f, 0.0f, 1.0f, 0xE0000000},
+			{0.0f , editorBGOffsetY + textEditorBGHeight/5.0f, 0.0f, 1.0f, 0xE0000000},
+		};
+		const VERTEX vertex2[] = {
+			{0.0f , editorBGOffsetY + textEditorBGHeight/5.0f, 0.0f, 1.0f, 0xE0000000},
+			{width, editorBGOffsetY + textEditorBGHeight/5.0f, 0.0f, 1.0f, 0xE0000000},
+			{width, editorBGOffsetY + textEditorBGHeight*4.0f/5.0f, 0.0f, 1.0f, 0xE0000000},
+			{0.0f , editorBGOffsetY +  textEditorBGHeight*4.0f/5.0f, 0.0f, 1.0f, 0xE0000000},
+		};
+		const VERTEX vertex3[] = {
+			{0.0f , editorBGOffsetY + textEditorBGHeight*4.0f/5.0f, 0.0f, 1.0f, 0xE0000000},
+			{width, editorBGOffsetY + textEditorBGHeight*4.0f/5.0f, 0.0f, 1.0f, 0xE0000000},
+			{width, editorBGOffsetY + textEditorBGHeight, 0.0f, 1.0f, 0x00000000},
+			{0.0f , editorBGOffsetY + textEditorBGHeight, 0.0f, 1.0f, 0x00000000},
+		};
+
+		dxcore.Device()->SetFVF(D3DFVF_XYZRHW | D3DFVF_DIFFUSE);
+		dxcore.Device()->DrawPrimitiveUP(D3DPT_TRIANGLEFAN, 2, vertex1, sizeof(VERTEX));
+		dxcore.Device()->DrawPrimitiveUP(D3DPT_TRIANGLEFAN, 2, vertex2, sizeof(VERTEX));
+		dxcore.Device()->DrawPrimitiveUP(D3DPT_TRIANGLEFAN, 2, vertex3, sizeof(VERTEX));
+
 		// render editor
-		glTranslatef(-1.0f, 1.0f + editorOffsetY,0.f);
+		BitmapFontDX::Instance()->SetOffset(0.0f, editorOffsetY);
+		
 		TextEditorPtrBuffer ptrbuf = textEditor.GetVisibleText();
 		TextEditorPtrBuffer textbuf = textEditor.GetText();
 
@@ -406,12 +420,12 @@ void Core::Render() {
 		}
 
 		const int transRange = 5;
-		BitmapFontGL::Instance()->Reset();
+		BitmapFontDX::Instance()->Reset();
 		for (int i = 0; i < textEditor.GetLineOffset(); i ++) {
-			BitmapFontGL::Instance()->ProcessComment(*textbuf[i]);
+			BitmapFontDX::Instance()->ProcessComment(*textbuf[i]);
 		}
 
-		std::set<int> errorLinesFS = shaderGL[nowEffect].GetErrorLinesFS();
+		const std::set<int>& errorLinesFS = shaderDX[nowEffect].GetErrorLinesFS();
 
 		for (int i = 0; i < ptrbuf.size(); i ++) {
 			float up = 1.0f;
@@ -436,22 +450,22 @@ void Core::Render() {
 			if (errorHighlight == false)
 				errorLine = false;
 
-			BitmapFontGL::Instance()->DrawLine(ptrbuf[i]->c_str(), aspect, width, i, up, down, errorLine);	
+			BitmapFontDX::Instance()->DrawLine(ptrbuf[i]->c_str(), aspect, width, i, up, down, errorLine);	
 			if (i == textEditor.GetCursorPosition().col)
-				cy = height - i * fontHeight - fontHeight/2.0f + height * editorOffsetY/2.0f;
+				cy = i * fontHeight + fontHeight/2.0f + editorOffsetY + 0.5;
+			
 		}
 		
-
 		if (nowCompiled)
-			BitmapFontGL::Instance()->DrawLine(EffectFileTable[nowEffect], aspect, width, textEditor.GetMaxLineNum(), 0.5f, 0.5f);	
+			BitmapFontDX::Instance()->DrawLine(EffectFileTable[nowEffect], aspect, width, textEditor.GetMaxLineNum(), 0.5f, 0.5f);	
 		else
-			BitmapFontGL::Instance()->DrawLine(EffectFileTable[nowEffect], aspect, width, textEditor.GetMaxLineNum(), 0.5f, 0.5f, 1.0f, 0.0f, 0.0f);	
+			BitmapFontDX::Instance()->DrawLine(EffectFileTable[nowEffect], aspect, width, textEditor.GetMaxLineNum(), 0.5f, 0.5f, 1.0f, 0.0f, 0.0f);	
 
-		BitmapFontGL::Instance()->DrawLine("F1-F10: Change File  F11: Show/Hide code  F12: Edit PostFx", aspect, width, textEditor.GetMaxLineNum() + 1, 0.5f, 0.5f);
+		BitmapFontDX::Instance()->DrawLine("F1-F10: Change File  F11: Show/Hide code  F12: Edit PostFx", aspect, width, textEditor.GetMaxLineNum() + 1, 0.5f, 0.5f);
 		
 		// render editor cursor
 		EditorCursor cursor = textEditor.GetCursorPosition();
-		BitmapFontGL::Instance()->DrawCursor(cursor.col, cursor.row, aspect, width);
+		BitmapFontDX::Instance()->DrawCursor(cursor.col, cursor.row, aspect, width);
 
 		if (textEditor.IsSelectMode()) {
 			EditorCursor selectStart = textEditor.GetSelectStart();
@@ -463,66 +477,105 @@ void Core::Render() {
 				int end = cursor.row;
 
 
-				BitmapFontGL::Instance()->DrawSelect(aspect, width, selectStart.col, start, end, 0.5f, 0.5f, 0.5f);
+				BitmapFontDX::Instance()->DrawSelect(aspect, width, selectStart.col, start, end, 0.5f, 0.5f, 0.5f);
 			} else {
 				for (int i = selectStart.col; i <= cursor.col; i ++) {
 					if (i < 0 || i >= textEditor.GetMaxLineNum())
 						continue;
 
 					if (i == selectStart.col) {
-						BitmapFontGL::Instance()->DrawSelect(aspect, width, i, selectStart.row, textEditor.GetLineLength(i));
+						BitmapFontDX::Instance()->DrawSelect(aspect, width, i, selectStart.row, textEditor.GetLineLength(i));
 					} else if (i < cursor.col) {
-						BitmapFontGL::Instance()->DrawSelect(aspect, width, i, 0, textEditor.GetLineLength(i));
+						BitmapFontDX::Instance()->DrawSelect(aspect, width, i, 0, textEditor.GetLineLength(i));
 					} else if (i == cursor.col) {
-						BitmapFontGL::Instance()->DrawSelect(aspect, width, i, 0, cursor.row);
+						BitmapFontDX::Instance()->DrawSelect(aspect, width, i, 0, cursor.row);
 					}
 				}
 			}
 		}
-//		BitmapFontGL::Instance()->DrawSelect(aspect, width, 5, 1, 9);
-
-		glPopMatrix();
 	}
 
+	dxcore.Device()->SetRenderTarget(0, dxcore.BackbufferSurface());
+	dxcore.Device()->Clear( 0, NULL, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER | D3DCLEAR_STENCIL, 0x000000FF, 1.0f, 0);
+
+	// backbuffer -> front
+	{
+		float offset = -0.5f;
+		if (shaderDX[POSTFxID].Valid()) {
+			offset = 0.0f;
+			shaderDX[POSTFxID].Bind();
+			
+			shaderDX[nowEffect].SetUniform(0, D3DXVECTOR4(width, height, 0.0f, 0.0f));
+			shaderDX[nowEffect].SetUniform(1, D3DXVECTOR4(realSec, 0.0f, 0.0f, 0.0f));
+			shaderDX[nowEffect].SetUniform(2, D3DXVECTOR4(mouseBuffer.GetCursorX(), mouseBuffer.GetCursorY(), 0.0f, 0.0f));
+			shaderDX[nowEffect].SetUniform(3, D3DXVECTOR4((float)low, 0.0f, 0.0f, 0.0f));
+			shaderDX[nowEffect].SetUniform(4, D3DXVECTOR4((float)mid, 0.0f, 0.0f, 0.0f));
+			shaderDX[nowEffect].SetUniform(5, D3DXVECTOR4((float)high, 0.0f, 0.0f, 0.0f));
+			shaderDX[nowEffect].SetUniform(6, D3DXVECTOR4((float)cy, 0.0f, 0.0f, 0.0f));
+
+		}
 	
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		dxcore.Device()->SetTexture(0, dxcore.RenderTexture());
+		dxcore.Device()->SetSamplerState(0, D3DSAMP_MAGFILTER, D3DTEXF_POINT);
+		dxcore.Device()->SetSamplerState(0, D3DSAMP_MINFILTER, D3DTEXF_POINT);
+		dxcore.Device()->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
 
-	if (shaderGL[POSTFxID].Valid()) {
-		shaderGL[POSTFxID].Bind();
-		
-		glBindTexture(GL_TEXTURE_2D, renderTexture);
-		shaderGL[POSTFxID].SetUniform("texture0", (int)0);
-		shaderGL[POSTFxID].SetUniform("resolution", (float)width, (float)height);
-		shaderGL[POSTFxID].SetUniform("time", realSec);
-		shaderGL[POSTFxID].SetUniform("mouse", mouseBuffer.GetCursorX(), mouseBuffer.GetCursorY());
-		shaderGL[POSTFxID].SetUniform("lowFreq", (float)low);
-		shaderGL[POSTFxID].SetUniform("midFreq", (float)mid);
-		shaderGL[POSTFxID].SetUniform("highFreq", (float)high);
-		shaderGL[POSTFxID].SetUniform("editorCursorY", (float)cy);
+		struct VERTEX{
+			float x,y,z,w;
+			D3DCOLOR color;
+			float u, v;
+		};
 
-		//float cy = (textEditor.GetCursorPosition().col - textEditor.GetLineOffset()) * 11
+		const VERTEX vertex1[] = {
+			{offset, offset, 0.0f, 1.0f, 0xFFFFFFFF, 0.0f, 0.0f},
+			{offset + width, offset, 0.0f, 1.0f, 0xFFFFFFFF, 1.0f, 0.0f},
+			{offset + width, offset + height, 0.0f, 1.0f, 0xFFFFFFFF, 1.0f, 1.0f},
+			{offset, offset + height, 0.0f, 1.0f, 0xFFFFFFFF, 0.0f, 1.0f},
+		};
 
-		glRecti(1, 1, -1, -1);
-		glBindTexture(GL_TEXTURE_2D, 0);
-
-		shaderGL[POSTFxID].Unbind();
-	} else {
-		glBindTexture(GL_TEXTURE_2D, renderTexture);
-		glRecti(1, 1, -1, -1);
-		glBindTexture(GL_TEXTURE_2D, 0);
+		dxcore.Device()->SetFVF(D3DFVF_XYZRHW | D3DFVF_DIFFUSE | D3DFVF_TEX1);
+		dxcore.Device()->DrawPrimitiveUP(D3DPT_TRIANGLEFAN, 2, vertex1, sizeof(VERTEX));
+		dxcore.Device()->SetTexture(0, NULL);
+	
+		if (shaderDX[POSTFxID].Valid()) {
+			shaderDX[POSTFxID].Unbind();
+		}
 	}
-	SDL_GL_SwapBuffers();
+}
+
+void Core::Render() {
+	
+    HRESULT hr = E_FAIL;
+	hr = dxcore.Device()->TestCooperativeLevel();
+    if(hr == D3DERR_DEVICELOST) {
+		// うわぁぁぁ
+    } else {
+		if(hr == D3DERR_DEVICENOTRESET) {
+			BitmapFontDX::Instance()->Unload();
+			for (int i = 0; i < EffectNum; i ++)
+				shaderDX[i].Unload();
+			dxcore.Unload();
+			dxcore.ResetDevice();
+			dxcore.Load();
+			for (int i = 0; i < EffectNum; i ++)
+				shaderDX[i].Load(&dxcore);
+			BitmapFontDX::Instance()->Load(&dxcore);
+		}
+		if(dxcore.Device()->BeginScene() == D3D_OK) {
+			this->RenderEditorAndScene();
+
+			dxcore.Device()->EndScene();
+		}
+		dxcore.Device()->Present(NULL, NULL, NULL, NULL);
+	}
 }
 
 int Core::MainLoop() {
-	
 	Logger::Instance()->OutputString("MainLoop...");
-
-	BitmapFontGL::Instance()->CreateTexture();
 	baseTime = SDL_GetTicks();
 
 	// precompile the effect for editor
-	shaderGL[POSTFxID].CompileFromFile(EffectFileTable[POSTFxID]);
+	shaderDX[POSTFxID].CompileFromFile(EffectFileTable[POSTFxID]);
 	textEditor.Load(EffectFileTable[0]);
 	
 	glGenTextures(1 , &audioTexture);
@@ -540,7 +593,8 @@ int Core::MainLoop() {
 	return 0;
 }
 
-Core::Core() : width(0), height(0), end(false), nowEffect(0), editMode(true), nowCompiled(false) {
+Core::Core() : width(0), height(0), end(false), nowEffect(0), editMode(true), nowCompiled(false)
+{
 	// OpenAL
 	audioAnalyzer = new AudioAnalyzer(44100, 1024);
 }
@@ -548,14 +602,6 @@ Core::Core() : width(0), height(0), end(false), nowEffect(0), editMode(true), no
 Core::~Core() {
 	delete audioAnalyzer;
 
-	if (frameBuffer != 0)
-	    glDeleteFramebuffers(1, &frameBuffer);
-	if (renderBuffer != 0)
-		glDeleteRenderbuffers(1, &renderBuffer);
-	if (renderTexture != 0)
-		glDeleteTextures(1, &renderTexture);
-	if (backTexture != 0)
-		glDeleteTextures(1, &backTexture);
 }
 
 };

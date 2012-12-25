@@ -2,6 +2,7 @@
 #define _CORE_H_
 
 #include <SDL.h>
+#include <SDL_syswm.h>
 
 #ifdef __WIN32__
 #define __NEEDSGLEW__
@@ -27,6 +28,8 @@
 #include <string>
 #include <math.h>
 
+#include "DXCore.h"
+#include "BitmapFontDX.h"
 #include "Logger.h"
 #include "KeyBuffer.h"
 #include "MouseBuffer.h"
@@ -35,14 +38,13 @@
 #include "TextEditor.h"
 #include "KeyAnalyzer.h"
 #include "AudioAnalyzer.h"
+#include "ShaderDX.h"
 
 namespace LiveCoder {
 	
 const int DefaultWidth = 800;
 const int DefaultHeight = 600;
-
 const int EffectNum = 64;
-
 
 class Core {
 private:
@@ -63,7 +65,7 @@ private:
 
 	KeyBuffer keyBuffer;
 	MouseBuffer mouseBuffer;
-	ShaderGL shaderGL[EffectNum];
+	ShaderDX shaderDX[EffectNum];
 //	ShaderGL postEffect;
 	TextEditor textEditor;
 	KeyAnalyzer keyAnalyzer;
@@ -85,6 +87,10 @@ private:
 
 	// option texture
 	GLuint optionTexture;
+
+	DXCore dxcore;
+
+	void RenderEditorAndScene();
 public:
 
 	int Initialize(std::string title_, int width_, int height_, int SDLflags);

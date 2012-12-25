@@ -18,7 +18,7 @@ int main(int argc, char** argv) {
 	  height = atoi(argv[3]);
 	}
 
-	if (core.Initialize("Live Coder", width, height, flags) < 0) {
+	if (core.Initialize("Live Coder - HLSL edition", width, height, flags) < 0) {
 		return -1;
 	}
 	core.MainLoop();

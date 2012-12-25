@@ -23,6 +23,7 @@
 namespace LiveCoder {
 
 	
+
 #define SyntaxTableNum 38
 static const char* syntaxTable[] = {
 	"if", "break", "int", "case", "continue", "return", "default", "do",
