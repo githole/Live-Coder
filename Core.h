@@ -40,6 +40,7 @@ namespace LiveCoder {
 	
 const int DefaultWidth = 800;
 const int DefaultHeight = 600;
+const Uint32 DefaultMaxFrameRate = -1;
 
 const int EffectNum = 64;
 
@@ -72,6 +73,7 @@ private:
 	std::string nowSource;
 
 	Uint32 baseTime;
+	Uint32 minFrameTime;
 
 	float* audioBuffer;
 	GLuint audioTexture;
@@ -87,7 +89,7 @@ private:
 	GLuint optionTexture;
 public:
 
-	int Initialize(std::string title_, int width_, int height_, int SDLflags);
+	int Initialize(std::string title_, int width_, int height_, Uint32 maxFrameRate, int SDLflags);
 	int MainLoop();
 	void Render();
 
