@@ -45,7 +45,7 @@ const char* EffectFileTable[] = {
 };
 
 // èâä˙âª
-int Core::Initialize(std::string title_ = "Title" , int width_ = DefaultWidth, int height_ = DefaultHeight, int SDLflags = SDL_OPENGL) {
+int Core::Initialize(std::string title_ = "Title" , int width_ = DefaultWidth, int height_ = DefaultHeight, Uint32 maxFrameRate = DefaultMaxFrameRate, int SDLflags = SDL_OPENGL) {
     const SDL_VideoInfo* info = NULL;
 
     if (SDL_Init(SDL_INIT_VIDEO) < 0) {
@@ -75,6 +75,11 @@ int Core::Initialize(std::string title_ = "Title" , int width_ = DefaultWidth, i
 
 	width = width_;
 	height = height_;
+	if (maxFrameRate == -1) {
+		minFrameTime = -1;
+	} else {
+		minFrameTime = 1000.0f/maxFrameRate;
+	}
 	
     if (SDL_SetVideoMode(width, height, bpp, SDLflags) == 0) {
 		Logger::Instance()->OutputString("Error: " + std::string(SDL_GetError()));
@@ -527,12 +532,20 @@ int Core::MainLoop() {
 	
 	glGenTextures(1 , &audioTexture);
 	while (!end) {
+		Uint32 frameStartTime = SDL_GetTicks();
+
 		if (ProcessSDLEvents() < 0)
 			break;
 
 		audioBuffer = audioAnalyzer->Capture();
 		
 		Render();
+
+		Uint32 frameEndTime = SDL_GetTicks();
+		Uint32 frameDeltaTime = SDL_GetTicks() - frameStartTime;
+		if (minFrameTime != -1 && frameDeltaTime <= minFrameTime) {
+			SDL_Delay(minFrameTime - frameDeltaTime);
+		}
 	}
 
 	Logger::Instance()->OutputString("End");
